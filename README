@@ -1,0 +1,293 @@
+                            Tetrinet for Linux
+                            ------------------
+                  by Andrew Church <achurch@achurch.org>
+                      and Petr Baudis <pasky@ucw.cz>
+
+                               Version 0.11
+
+
+For general information on Tetrinet, consult the file tetrinet.txt (the
+text file distributed with the original Windows version).
+
+The following notes apply to the Linux version of Tetrinet:
+
+
+Distribution/license information
+--------------------------------
+This program is public domain, and may be modified and distributed without
+limitation.
+
+
+Requirements
+------------
+You must be using a 50-line text display to run this version of Tetrinet;
+Xwindows is not yet supported.  One option is to open an xterm window in
+Xwindows and resize it to be 50 lines high.  The other option (recommended)
+is to use a 50-line text console.
+
+To get a 50-line text console, if you use LILO to boot, add the following
+line to the top of your /etc/lilo.conf file:
+
+vga = extended
+
+run /sbin/lilo, and reboot.  If you use a boot disk without LILO, insert it
+into your floppy drive, give the following command:
+
+rdev -v /dev/fd0 -2
+
+and reboot.
+
+Another option is to use the SVGATextMode program, available on Sunsite
+({http,ftp}://sunsite.unc.edu/pub/Linux/) and other places, to switch your
+console to 50-line mode without rebooting.  You may also use that program
+to set up a larger display (for example, I use 100x60); Tetrinet will
+detect this and rearrange the display to make the best use of the available
+space.
+
+
+Compilation
+-----------
+Type "make".  This will generate two programs: "tetrinet" and
+"tetrinet-server".  The former is the main program; the latter is a
+standalone server.
+
+It is recommended to have a brief look at the start of Makefile, it may
+contain some rather obscure but potentially invaluable compilation
+switches. It might not be necessary to change anything there at all, but
+it is good to be aware of the switches' existence.
+
+
+Starting the client
+-------------------
+Tetrinet requires two command-line arguments: your nickname and the server
+to connect to, in that order.  For example:
+
+	tetrinet MyNick tetrinet.somerandom.net
+
+Tetrinet will function only as long as it remains connected to the server;
+there is no "Client Settings" option as in the Windows version.  This may
+be remedied in a future version.
+
+You can also give Tetrinet any of the following options:
+
+	-fancy       Use "fancy" TTY graphics.  (Note that this will slow
+	             down redraws somewhat.)
+
+	-fast        Use the "tetrifast" mode to connect to the server.
+	             This mode eliminates the delay before a new cube
+	             appears, thus speeding the game up noticeably. This
+	             mode is incompatible with the classic mode and the
+	             server has to support it. If in doubt, ask the other
+	             players.
+
+	-log <file>  Log network traffic to the given file.  All lines
+	             start with an absolute time (seconds) in brackets.
+	             Lines sent from the client to the server are prefixed
+	             with ">>>", and lines from the server to the client
+	             are prefixed with "<<<".  This could be used with a
+	             utility program to replay a game later on (though such
+	             a program is not currently included in the Tetrinet
+	             distribution.)
+
+        -noshadow    Do not make pieces cast "shadows" when they are slowly
+                     falling.  (Normally the area under piece is filled by
+                     dim dots to help to determine where the piece would hit
+                     the ground if one would press the spacebar.)
+
+	-noslide     Do not allow pieces to "slide" after being dropped
+	             with the spacebar.  (Normally, there is a short time
+	             after pressing the spacebar during which a piece can
+	             "slide" left or right before it solidifies.)
+
+	-slide       Opposite of -noslide; allows pieces to "slide" after
+	             being dropped.  If both -slide and -noslide are given,
+	             -slide takes precedence.  If both -windows and -slide
+	             are given, this overrides the "no sliding" part of
+	             -windows without affecting the other changes in
+	             program behavior.
+
+        -shadow      Opposite of -noshadow; makes pieces cast "shadows".
+
+	-windows     Behave as much like the Windows version of Tetrinet as
+	             possible.  (See "Differences from Windows Tetrinet".)
+	             Implies -noslide and -noshadow.
+
+
+Starting the server
+-------------------
+There are two ways to start the Tetrinet server.  One way is to give the
+"-server" option to the Tetrinet program:
+
+	tetrinet -server
+
+Note that this is the deprecated way and support for this may be removed in
+the future releases. You must also explicitly enable it in the Makefile during
+compilation.
+
+The other is to run the "tetrinet-server" program.  Both of these are
+exactly equivalent.  The server can be stopped with ^C or a "kill" command.
+
+If you want the server to run in the background, use an "&" after the
+command, for example:
+
+	tetrinet -server &
+
+
+Configuring the server
+----------------------
+The server is configured via the ".tetrinet" file in your home directory.
+This contains all the settings for the server in a simple format.  The
+following is a sample .tetrinet file:
+
+	winlist Alcan;0;3;1 AndrewK;0;2;1
+	classic 1
+	initiallevel 1
+	linesperlevel 2
+	levelinc 1
+	averagelevels 1
+	speciallines 1
+	specialcount 1
+	specialcapacity 18
+	pieces 14 14 15 14 14 14 15
+	specials 18 18 3 12 0 16 3 12 18
+	linuxmode 0
+	ipv6_only 0
+
+Note that this file is automatically re-written at the end of a game or
+when the server is terminated.  If you want to modify parameters for a
+running server, send the server a HUP signal, using the command:
+
+	kill -HUP <pid-of-server>
+
+where <pid-of-server> is the process ID of the server.  A simpler
+alternative is:
+
+	killall -HUP tetrinet-server
+
+Three of the configuration lines require special explanation.  The winlist
+line is, as its name suggests, the winlist for the server; each parameter
+contains four semicolon-separated fields:
+	name ; team ; points ; games
+"team" is a flag which is either 1 if the entry is for a team or 0 if the
+entry is for a player.  "points" is just the number of points for the
+player (see the main Tetrinet documentation); "games" is the number of
+games in which that player has participated since getting on the winlist.
+
+The pieces line contains percentage frequencies for each type of piece.
+The order is: bar, square, reverse-L (green), L (purple), Z (red),
+S (blue), and T.
+
+The specials line, likewise, contains percentage frequencies for each type
+of special.  The order is:  A, C, N, R, S, B, G, Q, O.
+
+The "linuxmode" setting selects whether the client should try to remain
+compatible with Windows clients.  This only affects the winlist display; if
+linuxmode is set to 1, the server will send the number of games played by
+each player as well as points won.  This is set to zero by default.
+
+If the "ipv6_only" setting is set to a nonzero value, the server will only
+listen for IPv6 connections; if zero (default), the server will listen on
+both IPv4 and IPv6 if possible.
+
+
+Keys
+----
+The display mode can be selected by one of the following keys:
+
+	F1          Show Fields
+	F2          Partyline
+	F3          Winlist
+
+F10 can be used to quit at any time.
+
+In Partyline mode, the following commands are available.  To use a command,
+simply type the command and arguments into the Partyline input buffer and
+press Return (just like IRC).
+
+	/team [name]  Set your team name.  If a name is not given, play
+	                  alone.
+	/start        Start a game (if you are the first player on the
+	                  server).
+	/stop, /end   Stop the game currently in progress (either command
+	                  may be used).
+	/pause        Pause the game.
+	/unpause      Unpause the game.
+	/             Quote a following slash, for example:
+	                  "/ /start starts a game."
+
+The following keys are used for controls on the "Show Fields" screen:
+
+	Up, X       Rotate piece clockwise
+	Z           Rotate piece counterclockwise
+	Left        Move piece left
+	Right       Move piece right
+	Down        Accelerate piece downward
+	Space       Drop piece (note that by default, pieces can still
+	                "slide" after dropping!)
+	D           Discard the current (leftmost) special item
+	1..6        Use the current special item on the given player
+	T           Open a window for sending a message to other players
+	Ctrl-G      Close the text input window (text there is saved for
+	                the next time you press T)
+
+The following keys are used for editing text, both in the Partyline screen
+and in the text buffer on the Show Fields screen:
+
+	Left        Move cursor left one space
+	Right       Move cursor right one space
+	Ctrl-A      Move cursor to beginning of line
+	Ctrl-E      Move cursor to end of line
+	Backspace,  Delete character to left of cursor
+	  Delete
+	Ctrl-D      Delete character under cursor
+	Ctrl-U      Delete entire line
+	Enter       Send text (closes input window in Show Fields mode)
+
+
+Differences from Windows Tetrinet
+---------------------------------
+Although Linux Tetrinet is designed to play more or less the same as the
+original Windows version, there are a few differences; some of these are
+simply "missing" features in the Linux version, and some are features I
+have introduced into the Linux version because I believe they make the game
+more interesting or fun.  Features marked with (*) below can all be
+disabled with the -windows command-line option to make playing against
+Windows opponents fairer.
+
+  - Messages about specials (i.e. in the Attack/Defense window) are not
+    numbered.
+
+  - If a Block Bomb is done on someone who has two "o" (bomb) specials
+    right next to each other, one of them will be sent flying rather than
+    exploding.  (This is a bug.)
+
+  - Blocks scattered by a Block Bomb will only go to empty spaces on the
+    board, rather than appearing on top of already-existing blocks.
+    "Holes" will not be scattered. (*)
+
+  - Pieces may go over the top of the board.  In the Windows version, a
+    player loses if at any time any square goes off the top of the board.
+    In this version, a player only loses if there is no room for the next
+    piece to enter the board.
+
+  - Pieces dropped (with the spacebar) can still slide left and right after
+    dropping.  Idea from Mark H. Weaver's Netris. (*)  This feature alone
+    can be disabled with the -noslide command-line option.  It can also be
+    enabled with -slide even if other Linux-specific features are disabled
+    with the -windows option.
+
+  - Blockquakes will cause blocks to wrap around the edge of the screen
+    rather than disappearing off the edge. (*)
+
+  - Blockquakes will never move rows more than one block to the left or
+    right.  (Can anyone determine how quakes work in the Windows version?)
+
+  - Specials collected will always appear at the end of the specials bar
+    (in the Windows version, they randomly appear at the beginning or the
+    end). (*)
+
+
+Acknowledgements
+----------------
+Tetrinet was originally written by St0rmCat, who has asked not to be
+contacted with respect to Tetrinet.
