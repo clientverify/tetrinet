@@ -1,11 +1,4 @@
-/.klee_tetrinet.c.swp
-/.klee_tetrinet.h.swp
-/klee_tetrinet.o
-/.sockets.c.swp
-/tetrinet.bc
-tetrinet
-tetrinet-server
-sockets.o
-tetrinet.o
-tetris.o
-tty.o
+*.o
+*.log
+*.swo
+*.swp
