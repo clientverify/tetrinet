@@ -24,6 +24,8 @@
 #include "server.h"
 #include "sockets.h"
 
+#include "klee_tetrinet.h"
+
 /*************************************************************************/
 
 static int linuxmode = 0;  /* 1: don't try to be compatible with Windows */
@@ -997,6 +999,8 @@ int server_main()
 #endif
 	for (i = 0; i < 6; i++)
 		close(player_socks[i]);
+
+	ktest_finish(0, NULL);
 	return 0;
 }
 

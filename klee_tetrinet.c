@@ -13,6 +13,8 @@
 
 #define KTEST_FILE "tetrinet.ktest"
 
+// Returns either a network socket event or a key press (symbolic).
+// TODO: declare klee_fds symbolic using klee API and implement getch in klee.
 static int klee_wait_for_input(int msec)
 {
 	int c;
@@ -38,16 +40,22 @@ static int klee_wait_for_input(int msec)
 		return -2;	/* out of time */
 }
 
+// Stub functions used by stub interface.
 void klee_void() { return; }
 void klee_int(int i) { return; }
 void klee_int_pchar(int i, const char *s) { return; }
 void klee_pchar_int_int(const char *s, int i, int j) { return; }
 void klee_pchar_int(const char *s, int i) { return; }
 
+// Replaces ncurses interface with stub functions
 Interface klee_interface;
 
 void klee_init() {
 
+	// Set symbolic input function
+	klee_interface.wait_for_input = klee_wait_for_input;
+
+	// Set stub functions
 	klee_interface.screen_setup = klee_void;
 	klee_interface.screen_refresh = klee_void;
 	klee_interface.screen_redraw = klee_void;
@@ -66,8 +74,24 @@ void klee_init() {
 	klee_interface.setup_winlist = klee_void;
 }
 
+#if !defined(KTEST) || !defined(SERVER_ONLY)
 
-#ifdef SERVER_ONLY
+ssize_t ktest_write(int fd, const void *buf, size_t count) {
+  ssize_t num_bytes = write(fd, buf, count);
+  return num_bytes;
+}
+
+ssize_t ktest_read(int fd, void *buf, size_t count) {
+  ssize_t num_bytes = read(fd, buf, count);
+  return num_bytes;
+}
+
+void ktest_finish(int argc, char** argv) {
+	return;
+}
+
+#else
+
 KTestObject* ktest_objects = NULL;
 int num_ktest_objects = -1;
 int max_ktest_objects = 0;
@@ -104,7 +128,6 @@ ssize_t ktest_write(int fd, const void *buf, size_t count) {
   return num_bytes;
 }
 
-
 ssize_t ktest_read(int fd, void *buf, size_t count) {
   int i = ++num_ktest_objects;
 
@@ -134,8 +157,10 @@ void ktest_finish(int argc, char** argv) {
   ktest.objects = ktest_objects;
   int i;
   for (i = 0; i<num_ktest_objects; i++) {
-    printf("ktest_object[%d].name = %s\n",
-           i, ktest_objects[i].name);
+    printf("ktest_object[%d].name = %s : %d : %s \n",
+           i, ktest_objects[i].name, 
+					 ktest_objects[i].numBytes,
+					 ktest_objects[i].bytes);
   }
   int result = kTest_toFile(&ktest, KTEST_FILE);
   if (!result) {

@@ -3,3 +3,9 @@
 /klee_tetrinet.o
 /.sockets.c.swp
 /tetrinet.bc
+tetrinet
+tetrinet-server
+sockets.o
+tetrinet.o
+tetris.o
+tty.o

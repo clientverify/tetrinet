@@ -20,6 +20,12 @@
 
 /*************************************************************************/
 
+// Klee Support
+#include "klee_tetrinet.h"
+
+
+/*************************************************************************/
+
 int fancy = 0;		/* Fancy TTY graphics? */
 int log = 0;		/* Log network traffic to file? */
 char *logname;		/* Log filename */
@@ -643,6 +649,10 @@ int init(int ac, char **av)
 		 io = &tty_interface; */
 	io=&tty_interface;  /* because Xwin isn't done yet */
 
+#ifdef KLEE
+	io=&klee_interface;
+#endif
+
 	srand(time(NULL));
 	init_shapes();
 
@@ -743,6 +753,10 @@ int init(int ac, char **av)
 int main(int ac, char **av)
 {
 	int i;
+
+#ifdef KLEE
+	klee_init();
+#endif
 
 	if ((i = init(ac, av)) != 0)
 		return i;

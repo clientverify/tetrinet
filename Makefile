@@ -7,6 +7,7 @@ LD = cc
 # The passed compilation flags
 CFLAGS = -O2 -I/usr/include/ncurses -g -Wall -fno-builtin-log
 CFLAGS = -O2 -I/usr/include/ncurses -g -fno-builtin-log
+SERVER_CFLAGS = -lncurses
 
 # Whether to enable IPv6 support
 #IPV6 = 1
@@ -41,6 +42,7 @@ ifdef KLEE
 	LD = llvm-ld
 	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm
 	LDFLAGS = 
+	SERVER_CFLAGS =
 endif
 
 
@@ -67,8 +69,8 @@ binonly:
 tetrinet: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
-tetrinet-server: server.c sockets.c tetrinet.c tetris.c KTest.c server.h sockets.h tetrinet.h tetris.h KTest.h
-	$(CC) $(CFLAGS) -o $@ -DSERVER_ONLY server.c sockets.c tetrinet.c tetris.c KTest.c
+tetrinet-server: server.c sockets.c tetrinet.c tetris.c klee_tetrinet.c KTest.c server.h sockets.h tetrinet.h tetris.h klee_tetrinet.h KTest.h
+	$(CC) $(CFLAGS) $(SERVER_CFLAGS) -o $@ -DSERVER_ONLY server.c sockets.c tetrinet.c tetris.c klee_tetrinet.c KTest.c
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
