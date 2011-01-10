@@ -74,15 +74,17 @@ void klee_init() {
 	klee_interface.setup_winlist = klee_void;
 }
 
-#if !defined(KTEST) || !defined(SERVER_ONLY)
+#if !defined(KTEST) 
 
 ssize_t ktest_write(int fd, const void *buf, size_t count) {
-  ssize_t num_bytes = write(fd, buf, count);
+  //ssize_t num_bytes = write(fd, buf, count);
+  ssize_t num_bytes = send(fd, buf, count, NULL);
   return num_bytes;
 }
 
 ssize_t ktest_read(int fd, void *buf, size_t count) {
-  ssize_t num_bytes = read(fd, buf, count);
+  //ssize_t num_bytes = read(fd, buf, count);
+  ssize_t num_bytes = recv(fd, buf, count, NULL);
   return num_bytes;
 }
 
@@ -113,7 +115,8 @@ static inline void ktest_check_mem() {
 ssize_t ktest_write(int fd, const void *buf, size_t count) {
   int i = ++num_ktest_objects;
 
-  ssize_t num_bytes = write(fd, buf, count);
+  //ssize_t num_bytes = write(fd, buf, count);
+  ssize_t num_bytes = send(fd, buf, count, NULL);
 
   if (num_bytes >= 0) {
     ktest_check_mem();
@@ -131,7 +134,8 @@ ssize_t ktest_write(int fd, const void *buf, size_t count) {
 ssize_t ktest_read(int fd, void *buf, size_t count) {
   int i = ++num_ktest_objects;
 
-  ssize_t num_bytes = read(fd, buf, count);
+  //ssize_t num_bytes = read(fd, buf, count);
+  ssize_t num_bytes = recv(fd, buf, count, NULL);
 
   if (num_bytes >= 0) {
     ktest_check_mem();
