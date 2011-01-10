@@ -1,0 +1,7 @@
+===== tetrinet =====
+=== Todo ===
+  * tetrinet.c:656 need support for srand(), time()
+
+=== Configuration ===
+  * using klee branch nuklear with llvm-2.7
+
