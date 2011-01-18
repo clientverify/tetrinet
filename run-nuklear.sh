@@ -98,7 +98,7 @@ KLEECOMMAND+=" -nuklear-dbg=BasicInfo "
 #KLEECOMMAND+=" -nuklear-print-messages "
 
 KLEECOMMAND+=" -nuklear-no-symbolic-print=true "
-KLEECOMMAND+=" -nuklear-print-state-branch=true "
+#KLEECOMMAND+=" -nuklear-print-state-branch=true "
 #KLEECOMMAND+=" -nuklear-prune-hack=true "
 #KLEECOMMAND+=" -nuklear-prune-hack-2=true "
 
