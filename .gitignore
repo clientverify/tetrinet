@@ -2,3 +2,4 @@
 *.log
 *.swo
 *.swp
+/nuklear-results-tetrinet/*

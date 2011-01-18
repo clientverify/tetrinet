@@ -39,10 +39,15 @@ ifdef NO_BRUTE_FORCE_DECRYPTION
 endif
 ifdef KLEE 
 	CC = llvm-gcc
-	LD = llvm-ld
-	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm
+	#LD = /home/rac/research/gsec/local/llvm-2.7/bin/llvm-ld -disable-opt
+	LD = /home/rac/research/gsec/local/llvm-2.7/bin/llvm-ld
+	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm -g
 	LDFLAGS = 
 	SERVER_CFLAGS =
+endif
+ifdef KTEST
+	CFLAGS += -DKTEST
+	OBJS += KTest.o
 endif
 
 
@@ -55,7 +60,7 @@ install: all
 	cp -p tetrinet tetrinet-server /usr/games
 
 clean:
-	rm -f tetrinet tetrinet-server *.o
+	rm -f tetrinet tetrinet-server tetrinet-ktest tetrinet.bc tetrinet-llvm tetrinet-native *.o
 
 spotless: clean
 
