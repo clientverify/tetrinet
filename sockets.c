@@ -35,7 +35,8 @@ int sgetc(int s)
 		lastchar = EOF;
 		return c;
 	}
-	if (ktest_read(s, &ch, 1) != 1)
+	//if (read(s, &ch, 1) != 1)
+	if (recv(s, &ch, 1, NULL) != 1)
 		return EOF;
 	c = ch & 0xFF;
 	return c;
@@ -57,6 +58,8 @@ char *sgets(char *buf, int len, int s)
 	int c;
 	unsigned char *ptr = (unsigned char *) buf;
 
+	int buf_size = len;
+
 	if (len == 0)
 		return NULL;
 	c = sgetc(s);
@@ -64,6 +67,9 @@ char *sgets(char *buf, int len, int s)
 		;
 	if (c < 0)
 		return NULL;
+
+	ktest_copy(buf, buf_size-len, 0);
+
 	if (c == 0xFF)
 		ptr--;
 	*ptr = 0;
@@ -100,6 +106,7 @@ int sputs(const char *str, int s)
 					(int) tv.tv_sec, (int) tv.tv_usec/1000, str);
 		}
 	}
+
 	if (*str != 0) {
 		n = ktest_write(s, str, strlen(str));
 		if (n <= 0)
@@ -174,12 +181,14 @@ int conn(const char *host, int port, char ipbuf[4])
 	}
 	freeaddrinfo(res0);
 #else  /* !HAVE_IPV6 */
+#ifndef KLEE
 	memset(&sa, 0, sizeof(sa));
 	if (!(hp = gethostbyname(host)))
 		return -1;
 	memcpy((char *)&sa.sin_addr, hp->h_addr, hp->h_length);
 	sa.sin_family = hp->h_addrtype;
 	sa.sin_port = htons((unsigned short)port);
+#endif
 	if ((sock = socket(sa.sin_family, SOCK_STREAM, 0)) < 0)
 		return -1;
 	if (connect(sock, (struct sockaddr *)&sa, sizeof(sa)) < 0) {

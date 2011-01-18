@@ -318,7 +318,7 @@ static int clear_lines(int add_specials)
 		for (i = 0; i < count && pos < special_capacity; i++) {
 			for (j = 0; j < 9 && pos < special_capacity; j++) {
 				for (k = 0; k < new_specials[j] && pos < special_capacity; k++){
-					if (windows_mode && rand()%2) {
+					if (windows_mode && nuklear_rand()%2) {
 						memmove(specials+1, specials, pos);
 						specials[0] = j;
 						pos++;
@@ -363,8 +363,8 @@ static void place_specials(int num)
 			for (x = 0; left > 0 && x < FIELD_WIDTH; x++) {
 				if ((*f)[y][x] > 5 || (*f)[y][x] == 0)
 					continue;
-				if (rand() % nblocks < num) {
-					int which = 0, n = rand() % 100;
+				if (nuklear_rand() % nblocks < num) {
+					int which = 0, n = nuklear_rand() % 100;
 					while (n >= specialfreq[which]) {
 						n -= specialfreq[which];
 						which++;
@@ -420,6 +420,8 @@ static void send_field(Field *oldfield)
 		} /* for i (each tile type) */
 	} /* difference check */
 	/* -4 below is to adjust for "f %d " */
+	//IFKLEE(printf("send_field: diff=%d, WxH=%d, strlen(buf)-4=%d\n",
+	//			diff, (FIELD_WIDTH*FIELD_HEIGHT), strlen(buf)-4));
 	if (diff >= (FIELD_WIDTH*FIELD_HEIGHT)/2
 			|| strlen(buf)-4 > FIELD_WIDTH*FIELD_HEIGHT) {
 		static const char specials[] = "acnrsbgqo";
@@ -435,6 +437,8 @@ static void send_field(Field *oldfield)
 	}
 	*s = 0;
 	sputs(buf, server_sock);
+	IFKLEE(klee_increment_round());
+
 }
 
 /*************************************************************************/
@@ -447,8 +451,10 @@ void new_piece(void)
 	int n;
 	PieceData *pd;
 
+	IFKLEE(klee_new_piece());
+
 	current_piece = next_piece;
-	n = rand() % 100;
+	n = nuklear_rand() % 100;
 	next_piece = 0;
 	while (n >= piecefreq[next_piece] && next_piece < 6) {
 		n -= piecefreq[next_piece];
@@ -467,7 +473,7 @@ void new_piece(void)
 				int x, y;
 				for (y = 0; y < FIELD_HEIGHT; y++) {
 					for (x = 0; x < FIELD_WIDTH; x++)
-						(*f)[y][x] = rand()%5 + 1;
+						(*f)[y][x] = nuklear_rand()%5 + 1;
 				}
 				send_field(NULL);
 				sockprintf(server_sock, "playerlost %d", my_playernum);
@@ -528,6 +534,8 @@ void step_down(void)
 			sprintf(buf, "cs%d", completed);
 			io->draw_attdef(buf, my_playernum, 0);
 		}
+		//IFKLEE(printf("\nlevel=%d, init_level=%d, lines=%d, lines_per_level=%d, level_inc=%d\n\n",
+		//level, initial_level, lines, lines_per_level, level_inc));
 		level = initial_level + (lines / lines_per_level) * level_inc;
 		if (level > 100)
 			level = 100;
@@ -583,24 +591,24 @@ void do_special(const char *type, int from, int to)
 			while (nlines--) {
 				memmove((*f)[0], (*f)[1], FIELD_WIDTH*(FIELD_HEIGHT-1));
 				for (x = 0; x < FIELD_WIDTH; x++)
-					(*f)[21][x] = 1 + rand()%5;
-				(*f)[FIELD_HEIGHT-1][rand()%FIELD_WIDTH] = 0;
+					(*f)[21][x] = 1 + nuklear_rand()%5;
+				(*f)[FIELD_HEIGHT-1][nuklear_rand()%FIELD_WIDTH] = 0;
 			}
 		}
 
 	} else if (*type == 'a') {
 		memmove((*f)[0], (*f)[1], FIELD_WIDTH*(FIELD_HEIGHT-1));
 		for (x = 0; x < FIELD_WIDTH; x++)
-			(*f)[21][x] = 1 + rand()%5;
-		(*f)[FIELD_HEIGHT-1][rand()%FIELD_WIDTH] = 0;
-		(*f)[FIELD_HEIGHT-1][rand()%FIELD_WIDTH] = 0;
-		(*f)[FIELD_HEIGHT-1][rand()%FIELD_WIDTH] = 0;
+			(*f)[21][x] = 1 + nuklear_rand()%5;
+		(*f)[FIELD_HEIGHT-1][nuklear_rand()%FIELD_WIDTH] = 0;
+		(*f)[FIELD_HEIGHT-1][nuklear_rand()%FIELD_WIDTH] = 0;
+		(*f)[FIELD_HEIGHT-1][nuklear_rand()%FIELD_WIDTH] = 0;
 
 	} else if (*type == 'b') {
 		for (y = 0; y < FIELD_HEIGHT; y++) {
 			for (x = 0; x < FIELD_WIDTH; x++) {
 				if ((*f)[y][x] > 5)
-					(*f)[y][x] = rand()%5 + 1;
+					(*f)[y][x] = nuklear_rand()%5 + 1;
 			}
 		}
 
@@ -650,8 +658,8 @@ void do_special(const char *type, int from, int to)
 							continue;
 						tries = 10;
 						while (tries--) {
-							xnew = random() % FIELD_WIDTH;
-							ynew = FIELD_HEIGHT-1 - random()%16;
+							xnew = nuklear_random() % FIELD_WIDTH;
+							ynew = FIELD_HEIGHT-1 - nuklear_random()%16;
 							if (windows_mode || !(*f)[ynew][xnew]) {
 								(*f)[ynew][xnew] = (*f)[y2][x2];
 								break;
@@ -666,7 +674,7 @@ void do_special(const char *type, int from, int to)
 
 	} else if (*type == 'q') {
 		for (y = 0; y < FIELD_HEIGHT; y++) {
-			int r = rand()%3 - 1;
+			int r = nuklear_rand()%3 - 1;
 			if (r < 0) {
 				int save = (*f)[y][0];
 				memmove((*f)[y], (*f)[y]+1, FIELD_WIDTH-1);
@@ -688,8 +696,8 @@ void do_special(const char *type, int from, int to)
 		int i;
 
 		for (i = 0; i < 10; i++) {
-			x = rand() % FIELD_WIDTH;
-			y = rand() % FIELD_HEIGHT;
+			x = nuklear_rand() % FIELD_WIDTH;
+			y = nuklear_rand() % FIELD_HEIGHT;
 			if ((*f)[y][x] != 0) {
 				(*f)[y][x] = 0;
 				break;
@@ -821,7 +829,7 @@ void new_game(void)
 	timeout.tv_sec += timeout.tv_usec / 1000000;
 	timeout.tv_usec %= 1000000;
 	piece_waiting = 1;
-	n = rand() % 100;
+	n = nuklear_rand() % 100;
 	next_piece = 0;
 	while (n >= piecefreq[next_piece] && next_piece < 6) {
 		n -= piecefreq[next_piece];
@@ -838,10 +846,19 @@ int tetris_timeout(void)
 	struct timeval tv;
 	int t;
 
+#ifdef KLEE
+	//int tetris_time; //symbolic
+	////klee_nuklear_make_symbolic(&tetris_time, "tetris_time");
+	//klee_make_symbolic(&tetris_time, sizeof(tetris_time), "tetris_time");
+	//if (tetris_time <= 0)
+	//	return 0;
+	return 1;
+#else
 	gettimeofday(&tv, NULL);
 	t = (timeout.tv_sec - tv.tv_sec) * 1000
 		+ (timeout.tv_usec-tv.tv_usec) / 1000;
 	return t<0 ? 0 : t;
+#endif
 }
 
 /*************************************************************************/
@@ -978,7 +995,7 @@ void tetris_input(int c)
 			break;
 
 		case ' ':		/* Down until the piece hits something */
-			if (piece_waiting)
+			if (piece_waiting) 
 				break;
 			draw_piece(0);
 			ynew = current_y+1;

@@ -7,6 +7,8 @@
 #ifndef TETRINET_H
 #define TETRINET_H
 
+#include "klee_tetrinet.h"
+
 #ifndef IO_H
 # include "io.h"
 #endif

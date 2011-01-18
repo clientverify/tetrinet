@@ -13,31 +13,81 @@
 
 #define KTEST_FILE "tetrinet.ktest"
 
+
+#ifdef KLEE
+
+int g_round = 0;
+int g_last_round = 0;
+int g_new_piece = 0;
+int g_recv = 0;
+
+void klee_increment_round() {
+	g_round++;
+	klee_print_expr("round = ", g_round);
+}
+
+void klee_new_piece() {
+	g_new_piece = 1;
+	KPRINTF("new piece");
+}
+
 // Returns either a network socket event or a key press (symbolic).
 // TODO: declare klee_fds symbolic using klee API and implement getch in klee.
 static int klee_wait_for_input(int msec)
 {
 	int c;
 	int klee_fds; //symbolic
+	static int wait_for_input_count = 0;
 
-	// Only allow UP, DOWN, LEFT, RIGHT
-	if (klee_fds == 0) {
-		c = getch();
-		if (c == KEY_UP)
-			return K_UP;
-		else if (c == KEY_DOWN)
-			return K_DOWN;
-		else if (c == KEY_LEFT)
-			return K_LEFT;
-		else if (c == KEY_RIGHT)
-			return K_RIGHT;
-		else 
-			exit(1);
-	} 
-	else if (klee_fds == 1)  // (FD_ISSET(server_sock, &fds))
-		return -1;
-	else
+	wait_for_input_count++;
+	klee_print_expr("wait_for_input count = ", wait_for_input_count);
+
+	if (g_round > g_last_round && g_new_piece) {
+		g_last_round = g_round;
+		g_new_piece = 0;
+
+		c = nuklear_getch();
+		int retval = -1;
+
+		//if (c == KEY_UP)
+		//	retval = K_UP;
+		//else if (c == KEY_DOWN)
+		//	retval = K_DOWN;
+		//else if (c == KEY_LEFT)
+		//	retval = K_LEFT;
+		//else if (c == KEY_RIGHT)
+		//	retval = K_RIGHT;
+		//else if (c == ' ')
+		//	retval = ' ';
+
+		if (c == ' ')
+			retval = ' ';
+		else if (c == '0'|0x80)
+			retval = K_F10;
+		else
+			KEXIT;
+		
+		KPRINTF("user input event");
+		return retval;
+	}
+
+	klee_make_symbolic(&klee_fds, sizeof(klee_fds), "klee_fds");
+
+	if (klee_fds == -1) {
+		if (msec == -1) {
+			KPRINTF("select timeout event (invalid, exiting)");
+			KEXIT;
+		}
+		KPRINTF("select timeout event");
 		return -2;	/* out of time */
+	}
+
+	if (klee_fds == 1)  { // (FD_ISSET(server_sock, &fds))
+		KPRINTF("server message event");
+		return -1;
+	}
+
+	KEXIT;
 }
 
 // Stub functions used by stub interface.
@@ -74,6 +124,19 @@ void klee_init() {
 	klee_interface.setup_winlist = klee_void;
 }
 
+#endif
+
+int nuklear_rand() {
+	static long a = 100001;
+	a = (a * 125) % 2796203;
+	return (a % RAND_MAX);
+}
+
+int nuklear_random() {
+	return nuklear_rand();
+}
+
+
 #if !defined(KTEST) 
 
 ssize_t ktest_write(int fd, const void *buf, size_t count) {
@@ -88,6 +151,10 @@ ssize_t ktest_read(int fd, void *buf, size_t count) {
   return num_bytes;
 }
 
+void ktest_copy(void *buf, size_t num_bytes, int name_type) {
+	return;
+}
+
 void ktest_finish(int argc, char** argv) {
 	return;
 }
@@ -98,7 +165,8 @@ KTestObject* ktest_objects = NULL;
 int num_ktest_objects = -1;
 int max_ktest_objects = 0;
 enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
-char* ktest_object_names[] = { "c2s", "s2c" };
+//char* ktest_object_names[] = { "c2s", "s2c" }; // if recording at server
+char* ktest_object_names[] = { "s2c", "c2s" }; // if recording at client
 
 static inline void ktest_check_mem() {
   if (num_ktest_objects >= max_ktest_objects) {
@@ -150,7 +218,24 @@ ssize_t ktest_read(int fd, void *buf, size_t count) {
   return num_bytes;
 }
 
+void ktest_copy(void *buf, size_t num_bytes, int name_type) {
+  int i = ++num_ktest_objects;
+
+  if (num_bytes >= 0) {
+    ktest_check_mem();
+    ktest_objects[i].name = ktest_object_names[name_type];
+    ktest_objects[i].numBytes = num_bytes;
+    ktest_objects[i].bytes = (unsigned char*) malloc(sizeof (unsigned char) * num_bytes);
+    memcpy(ktest_objects[i].bytes, buf, num_bytes);
+  } else {
+    fprintf(stderr, "ERROR in ktest_read\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+
 void ktest_finish(int argc, char** argv) {
+  ++num_ktest_objects;
   fprintf(stdout, "Writing KTest file.\n");
   KTest ktest;
   ktest.numArgs = argc;

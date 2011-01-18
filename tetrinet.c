@@ -275,8 +275,9 @@ void parse(char *buf)
 			/* stack height */;
 		if ((s = strtok(NULL, " ")))
 			initial_level = atoi(s);
-		if ((s = strtok(NULL, " ")))
+		if ((s = strtok(NULL, " "))) {
 			lines_per_level = atoi(s);
+		}
 		if ((s = strtok(NULL, " ")))
 			level_inc = atoi(s);
 		if ((s = strtok(NULL, " ")))
@@ -334,7 +335,7 @@ void parse(char *buf)
 		s = buf + sprintf(buf, "f %d ", my_playernum);
 		for (y = 0; y < FIELD_HEIGHT; y++) {
 			for (x = 0; x < FIELD_WIDTH; x++) {
-				fields[my_playernum-1][y][x] = rand()%5 + 1;
+				fields[my_playernum-1][y][x] = nuklear_rand()%5 + 1;
 				*s++ = '0' + fields[my_playernum-1][y][x];
 			}
 		}
@@ -640,6 +641,7 @@ int init(int ac, char **av)
 #endif
 	int slide = 0;	    /* Do we definitely want to slide? (-slide) */
 
+	memset(buf, 0, 1024);
 
 	/* If there's a DISPLAY variable set in the environment, default to
 	 * Xwindows I/O, else default to terminal I/O. */
@@ -720,15 +722,20 @@ int init(int ac, char **av)
 		return 1;
 	}
 	sprintf(nickmsg, "tetri%s %s 1.13", tetrifast ? "faster" : "sstart", nick);
+
+	ip[0]=127; ip[1]=0; ip[2]=0; ip[3]=1;
 	sprintf(iphashbuf, "%d", ip[0]*54 + ip[1]*41 + ip[2]*29 + ip[3]*17);
+
 	/* buf[0] does not need to be initialized for this algorithm */
 	len = strlen(nickmsg);
+
 	for (i = 0; i < len; i++)
 		buf[i+1] = (((buf[i]&0xFF) + (nickmsg[i]&0xFF)) % 255) ^ iphashbuf[i % strlen(iphashbuf)];
 	len++;
 	for (i = 0; i < len; i++)
 		sprintf(nickmsg+i*2, "%02X", buf[i] & 0xFF);
-	sputs(nickmsg, server_sock);
+
+		sputs(nickmsg, server_sock);
 
 	do {
 		if (!sgets(buf, sizeof(buf), server_sock)) {
@@ -762,12 +769,15 @@ int main(int ac, char **av)
 	if ((i = init(ac, av)) != 0)
 		return i;
 
+	KPRINTF("Successful initialization");
+
 	for (;;) {
 		int timeout;
-		if (playing_game && !game_paused)
+		if (playing_game && !game_paused) {
 			timeout = tetris_timeout();
-		else
+		} else {
 			timeout = -1;
+		}
 		i = io->wait_for_input(timeout);
 		if (i == -1) {
 			char buf[1024];
@@ -821,8 +831,15 @@ int main(int ac, char **av)
 				partyline_input(i);
 		}
 	}
+	
+	char buf[512];
+	sprintf(buf, "quit %d", my_playernum);
+	sputs(buf, server_sock);
 
+	KPRINTF("Successful exit");
 	disconn(server_sock);
+
+	ktest_finish(0, NULL);
 	return 0;
 }
 
