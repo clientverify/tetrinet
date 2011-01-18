@@ -435,9 +435,10 @@ static void send_field(Field *oldfield)
 			}
 		}
 	}
+	IFKLEE(klee_increment_round());
+	IFKLEE(nuklear_merge());
 	*s = 0;
 	sputs(buf, server_sock);
-	IFKLEE(klee_increment_round());
 
 }
 

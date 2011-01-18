@@ -20,9 +20,13 @@ int g_round = 0;
 int g_last_round = 0;
 int g_new_piece = 0;
 int g_recv = 0;
+//int wait_for_input_count = 0;
+
+static int nuklear_merge() { klee_warning("nuklear_merge"); return 0; }
 
 void klee_increment_round() {
 	g_round++;
+	KPRINTF("NEW ROUND");
 	klee_print_expr("round = ", g_round);
 }
 
@@ -59,10 +63,10 @@ void klee_create_inputs() {
 	int i = 0;
 
 	// TODO change to nuklear_symbolic
-	klee_make_symbolic(&do_quit, sizeof(do_quit), "do_quit");
-	klee_make_symbolic(&rotations, sizeof(rotations), "rotations");
-	klee_make_symbolic(&shifts, sizeof(shifts), "shifts");
-	klee_make_symbolic(&shift_type, sizeof(shift_type), "shift_type");
+	klee_nuklear_make_symbolic(&do_quit, "do_quit");
+	klee_nuklear_make_symbolic(&rotations,"rotations");
+	klee_nuklear_make_symbolic(&shifts,  "shifts");
+	klee_nuklear_make_symbolic(&shift_type, "shift_type");
 
 	if (do_quit == 0) {
 		inputs[i++] = K_F10;
@@ -140,36 +144,73 @@ int klee_getch() {
 
 // Returns either a network socket event or a key press (symbolic).
 // TODO: declare klee_fds symbolic using klee API and implement getch in klee.
-static int klee_wait_for_input(int msec)
+int klee_wait_for_input(int msec)
 {
 	int c;
-	int klee_fds; //symbolic
-	static int wait_for_input_count = 0;
 
-	wait_for_input_count++;
-	klee_print_expr("wait_for_input count = ", wait_for_input_count);
+	//wait_for_input_count++;
+	//klee_print_expr("wait_for_input count = ", wait_for_input_count);
 
-	//if (g_round > g_last_round && g_new_piece) {
-	if (g_new_piece) {
+	if (g_round > g_last_round && g_new_piece) {
+	//if (g_new_piece) {
 		return klee_getch();
 	}
 
-	klee_make_symbolic(&klee_fds, sizeof(klee_fds), "klee_fds");
+	KPRINTF("KLEE_NUKLEAR_MAKE_SYMBOLIC");
+	//klee_make_symbolic(&klee_fds, sizeof(klee_fds), "klee_fds");
+	
+	unsigned int *ev = malloc(sizeof (unsigned int));
+	klee_nuklear_make_symbolic(ev, "ev");
 
-	if (klee_fds == -1) {
-		if (msec == -1) {
-			//KPRINTF("select timeout event (invalid, exiting)");
-			KEXIT;
-		}
-		KPRINTF("select timeout event");
-		return -2;	/* out of time */
-	}
+	//if (*ev > 2)
+	//  KEXIT;
 
-	if (klee_fds == 1)  { // (FD_ISSET(server_sock, &fds))
+	if (*ev == 1) {
+ 		if (msec == -1) {
+			//klee_print_expr("ev: ", *ev);
+			free(ev);
+ 			KPRINTF("select timeout event (invalid, exiting)");
+ 			//klee_print_expr("WFI: ", wait_for_input_count);
+ 			KEXIT;
+ 		}
+		//klee_print_expr("ev: ", *ev);
+ 		free(ev);
+ 		KPRINTF("select timeout event");
+ 		//klee_print_expr("WFI: ", wait_for_input_count);
+ 		return -2;	/* out of time */
+	} 
+	if (*ev == 2) {
+		//klee_print_expr("ev: ", *ev);
+ 		free(ev);
 		KPRINTF("server message event");
+		//klee_print_expr("WFI: ", wait_for_input_count);
 		return -1;
 	}
-
+	//switch (*klee_fds) {
+	//	case 1: {
+	//		free(klee_fds);
+	//		if (msec == -1) {
+	//			KPRINTF("select timeout event (invalid, exiting)");
+	//			klee_print_expr("WFI: ", wait_for_input_count);
+	//			KEXIT;
+	//		}
+	//		KPRINTF("select timeout event");
+	//		klee_print_expr("WFI: ", wait_for_input_count);
+	//		return -2;	/* out of time */
+	//	} break;
+	//	case 2: {
+	//		free(klee_fds);
+	//		KPRINTF("server message event");
+	//		klee_print_expr("WFI: ", wait_for_input_count);
+	//		return -1;
+	//	} break;
+	//	default: {
+	//		free(klee_fds);
+	//	} break;
+	//}
+	free(ev);
+	//KPRINTF("klee exit");
+	//klee_print_expr("WFI: ", wait_for_input_count);
 	KEXIT;
 }
 

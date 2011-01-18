@@ -79,18 +79,18 @@ KLEECOMMAND+=" -use-cex-cache=0 -use-fast-cex-solver=0 "
 KLEECOMMAND+=" -no-xwindows "
 
 ######### BEGIN DEBUG SWITCHES ########
-#KLEECOMMAND+=" -print-function-calls "
+##KLEECOMMAND+=" -print-function-calls "
 #KLEECOMMAND+=" -debug-print-instructions"
 #KLEECOMMAND+=" -debug-log-merge "
 #KLEECOMMAND+=" -debug-log-state-merge "
 #
-#KLEECOMMAND+=" -debug-nuklear-merge "
-#KLEECOMMAND+=" -debug-nuklear-remaining-merge "
-#KLEECOMMAND+=" -nuklear-dbg=Details" 
-#KLEECOMMAND+=" -nuklear-dbg-socket-failure " 
-#KLEECOMMAND+=" -nuklear-dbg-socket-success " 
+KLEECOMMAND+=" -debug-nuklear-merge "
+KLEECOMMAND+=" -debug-nuklear-remaining-merge "
+KLEECOMMAND+=" -nuklear-dbg=Details" 
+KLEECOMMAND+=" -nuklear-dbg-socket-failure " 
+KLEECOMMAND+=" -nuklear-dbg-socket-success " 
 
-KLEECOMMAND+=" -nuklear-dbg=BasicInfo " 
+#KLEECOMMAND+=" -nuklear-dbg=BasicInfo " 
 #KLEECOMMAND+=" -pc-width-as-arg=false "
 #KLEECOMMAND+=" -pc-prefix-width=false "
 ######### END DEBUG SWITCHES ########
@@ -98,8 +98,8 @@ KLEECOMMAND+=" -nuklear-dbg=BasicInfo "
 #KLEECOMMAND+=" -nuklear-print-messages "
 
 KLEECOMMAND+=" -nuklear-no-symbolic-print=true "
-#KLEECOMMAND+=" -nuklear-print-state-branch=true "
-#KLEECOMMAND+=" -nuklear-prune-hack=true "
+KLEECOMMAND+=" -nuklear-print-state-branch=true "
+KLEECOMMAND+=" -nuklear-prune-hack=true "
 #KLEECOMMAND+=" -nuklear-prune-hack-2=true "
 
 #KLEECOMMAND+=" -nuklear-merge-checkpoint-digest "
@@ -115,8 +115,9 @@ KLEECOMMAND+=" -max-rounds 2000 "
 KLEECOMMAND+=" -nuklear-no-recv-return-zero "
 
 KLEECOMMAND+=" -nuklear "
-#KLEECOMMAND+=" -use-nuklear-merge  " 
-#KLEECOMMAND+=" -nuklear-merge-function=nuklear_merge -nuklear-merge-function=nuklear_checkpoint "
+KLEECOMMAND+=" -use-nuklear-merge  " 
+KLEECOMMAND+=" -nuklear-merge-function=nuklear_merge "
+#KLEECOMMAND+=" -nuklear-merge-function=nuklear_checkpoint "
 KLEECOMMAND+=" -socket-replay $KTESTFILE "
 
 #KLEECOMMAND+=" -load=/usr/lib64/libSM.so   -load=/usr/lib64/libICE.so  "

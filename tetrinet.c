@@ -769,6 +769,8 @@ int main(int ac, char **av)
 	if ((i = init(ac, av)) != 0)
 		return i;
 
+	IFKLEE(nuklear_merge());
+	IFKLEE(klee_increment_round());
 	KPRINTF("Successful initialization");
 
 	for (;;) {
@@ -787,6 +789,8 @@ int main(int ac, char **av)
 				msg_text(BUFFER_PLINE, "*** Disconnected from Server");
 				break;
 			}
+			IFKLEE(nuklear_merge());
+			IFKLEE(klee_increment_round());
 		} else if (i == -2) {
 			tetris_timeout_action();
 		} else if (i == 12) {  /* Ctrl-L */
