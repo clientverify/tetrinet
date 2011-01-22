@@ -18,7 +18,6 @@ char *klee_logname = "./klee.log";
 int g_round = 0;
 int g_last_round = 0;
 int g_new_piece = 0;
-int g_partial_fields;
 
 #define INPUTS_LENGTH 32
 unsigned int inputs[INPUTS_LENGTH];
@@ -27,7 +26,6 @@ char* input_strings[6] = {"UP", "LF", "RT", "SP", "QT", "INVALID"};
 
 void klee_increment_round() { g_round++; }
 void klee_new_piece() { g_new_piece = 1; }
-
 
 int nuklear_rand() {
 	static long a = 100001;

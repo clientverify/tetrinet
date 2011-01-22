@@ -399,8 +399,15 @@ static void send_partial_field(Field *oldfield)
 		} /* for x */
 	} /* for y */
 
-	//s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
-	s = buf + sprintf(buf, "p %d %d", my_playernum, current_x);
+	if (partial_field_type == 1) 
+		s = buf + sprintf(buf, "p %d %d", my_playernum, y_start);
+	else if (partial_field_type == 2) 
+		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
+	else if (partial_field_type == 2) 
+		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
+	else if (partial_field_type == 3) 
+		s = buf + sprintf(buf, "p %d %d", my_playernum, current_x);
+
 	s++;
 	*s = 0;
 	sputs(buf, server_sock);
@@ -412,7 +419,7 @@ static void send_field(Field *oldfield)
 	int i, x, y, diff = 0;
 	char buf[512], *s;
 
-	if (g_round > 5  && g_partial_fields && g_round % g_partial_fields != 0) {
+	if (g_round > 5  && partial_field && g_round % partial_field_rate != 0) {
 		send_partial_field(oldfield);
 		return;
 	}

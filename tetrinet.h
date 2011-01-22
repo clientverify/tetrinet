@@ -94,6 +94,10 @@ extern int not_playing_game;
 extern int game_paused;
 
 extern int random_input;
+extern int partial_field;
+extern int partial_field_rate;
+extern int partial_field_type;
+extern int random_seed;
 
 extern Interface *io;
 

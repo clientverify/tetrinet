@@ -43,7 +43,12 @@ int playing_game;	/* Are we currently playing a game? */
 int not_playing_game;	/* Are we currently watching people play a game? */
 int game_paused;	/* Is the game currently paused? */
 
-int random_input = 1;
+// vars for klee testing
+int random_input = 0;
+int partial_field = 0;
+int partial_field_rate = 5;
+int partial_field_type = 1;
+int random_seed = -1;
 
 Interface *io;		/* Input/output routines */
 
@@ -683,7 +688,11 @@ int init(int ac, char **av)
 	io=&klee_interface;
 #endif
 
-	srand(time(NULL));
+	if (random_seed == -1)
+		srand(time(NULL));
+	else 
+		srand(random_seed)
+
 	init_shapes();
 
 	for (i = 1; i < ac; i++) {
@@ -719,6 +728,30 @@ int init(int ac, char **av)
 					tetrifast = 1;
 				} else if (strcmp(av[i], "-random") == 0) {
 					random_input = 1;
+				} else if (strcmp(av[i], "-partialtype") == 0) {
+					partial_field = 1;
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -partialtype requires an argument\n");
+						return 1;
+					}
+					partial_field_type = atoi(av[i]);
+				} else if (strcmp(av[i], "-partialrate") == 0) {
+					partial_field = 1;
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -partialrate requires an argument\n");
+						return 1;
+					}
+					partial_field_rate = atoi(av[i]);
+				} else if (strcmp(av[i], "-seed") == 0) {
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -seed requires an argument\n");
+						return 1;
+					}
+					random_seed = atoi(av[i]);
+
 				} else {
 					fprintf(stderr, "Unknown option %s\n", av[i]);
 					help();
@@ -795,8 +828,6 @@ int main(int ac, char **av)
 	// Initialize the klee stub interface
 	klee_init();
 #endif
-
-	g_partial_fields = 10;
 
 	if ((i = init(ac, av)) != 0)
 		return i;

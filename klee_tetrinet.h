@@ -9,7 +9,6 @@ void klee_init();
 extern int g_round;
 extern int g_last_round;
 extern int g_new_piece;
-extern int g_partial_fields;
 
 #ifdef KLEE
 
