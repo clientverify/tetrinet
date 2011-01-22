@@ -58,8 +58,8 @@ fi
 
 if [ "$DEBUG" == "release" ]
 then
-  BINDIR="/home/rac/research/gsec/src/klee/Release/bin"
   BINDIR="/home/rac/research/gsec/src/klee/Debug/bin"
+  BINDIR="/home/rac/research/gsec/src/klee/Release/bin"
   KLEECOMMAND="time $BINDIR/nuklear --run-in=$KLEEOUT/run-dir/ --output-dir=$KLEEOUT/output/$RUNPREFIX.output "
 else
   BINDIR="/home/rac/research/gsec/src/klee/Debug/bin"
@@ -83,28 +83,28 @@ KLEECOMMAND+=" -no-xwindows "
 #KLEECOMMAND+=" -debug-print-instructions"
 #KLEECOMMAND+=" -debug-log-merge "
 #KLEECOMMAND+=" -debug-log-state-merge "
-#
+ 
 KLEECOMMAND+=" -debug-nuklear-merge "
-KLEECOMMAND+=" -debug-nuklear-remaining-merge "
-KLEECOMMAND+=" -nuklear-dbg=Details" 
-KLEECOMMAND+=" -nuklear-dbg-socket-failure " 
-KLEECOMMAND+=" -nuklear-dbg-socket-success " 
+#KLEECOMMAND+=" -debug-nuklear-remaining-merge "
+#KLEECOMMAND+=" -nuklear-dbg=Details" 
+#KLEECOMMAND+=" -nuklear-dbg-socket-failure " 
+#KLEECOMMAND+=" -nuklear-dbg-socket-success " 
 
 #KLEECOMMAND+=" -nuklear-dbg=BasicInfo " 
 #KLEECOMMAND+=" -pc-width-as-arg=false "
 #KLEECOMMAND+=" -pc-prefix-width=false "
+#KLEECOMMAND+=" -nuklear-print-state-branch=true "
 ######### END DEBUG SWITCHES ########
 
 #KLEECOMMAND+=" -nuklear-print-messages "
 
 KLEECOMMAND+=" -nuklear-no-symbolic-print=true "
-KLEECOMMAND+=" -nuklear-print-state-branch=true "
 KLEECOMMAND+=" -nuklear-prune-hack=true "
 #KLEECOMMAND+=" -nuklear-prune-hack-2=true "
 
 #KLEECOMMAND+=" -nuklear-merge-checkpoint-digest "
 
-#KLEECOMMAND+=" -nuklear-merge-digest "
+KLEECOMMAND+=" -nuklear-merge-digest "
 
 KLEECOMMAND+=" -max-rounds 2000 "
 #KLEECOMMAND+=" -queue-size 4 "

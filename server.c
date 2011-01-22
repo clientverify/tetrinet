@@ -642,6 +642,14 @@ newplayer:
 			s = "";
 		send_to_all_but(player, "f %d %s", player, s);
 
+	} else if (strcmp(cmd, "p") == 0) {   /* partial field */
+		if (!(s = strtok(NULL, " ")) || atoi(s) != player)
+			return 1;
+		if (!(s = strtok(NULL, "")))
+			s = "";
+		printf("p %d %s\n", player, s);
+		send_to_all_but(player, "p %d %s", player, s);
+
 	} else if (strcmp(cmd, "lvl") == 0) {
 		if (!(s = strtok(NULL, " ")) || atoi(s) != player)
 			return 1;

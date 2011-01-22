@@ -18,6 +18,8 @@
 #include "tetris.h"
 #include "io.h"
 
+#include "klee_tetrinet.h"
+
 /*************************************************************************/
 
 #define MY_HLINE	(fancy ? ACS_HLINE : '-')
@@ -44,18 +46,37 @@ static int wait_for_input(int msec)
 	struct timeval tv;
 	int c;
 	static int escape = 0;
+	static unsigned char timeout_skip = 1;
 
 	FD_ZERO(&fds);
 	FD_SET(0, &fds);
 	FD_SET(server_sock, &fds);
 	tv.tv_sec = msec/1000;
 	tv.tv_usec = (msec*1000) % 1000000;
+
+	if (random_input) {
+		if (msec > 0) { 
+			tv.tv_sec = 0;
+			tv.tv_usec = 100000;
+		}
+		timeout_skip = timeout_skip ^ 1;
+		if (msec > 0) 
+			msec == 0;
+		if (timeout_skip && g_round > g_last_round && g_new_piece) {
+			c = klee_getch();
+			goto random_input_active;
+		}
+	}
+	
 	while (select(server_sock+1, &fds, NULL, NULL, msec<0 ? NULL : &tv) < 0) {
 		if (errno != EINTR)
 			perror("Warning: select() failed");
 	}
+
 	if (FD_ISSET(0, &fds)) {
-		c = getch();
+			c = getch();
+random_input_active:
+
 		if (!escape && c == 27) {	/* Escape */
 			escape = 1;
 			c = wait_for_input(1000);
@@ -106,7 +127,8 @@ static int wait_for_input(int msec)
 		else
 			return c;
 	} /* if (FD_ISSET(0, &fds)) */
-	else if (FD_ISSET(server_sock, &fds))
+
+	if (FD_ISSET(server_sock, &fds))
 		return -1;
 	else
 		return -2;	/* out of time */
@@ -778,6 +800,7 @@ static void draw_other_field(int player)
 
 	if (dispmode != MODE_FIELDS)
 		return;
+
 	f = &fields[player-1];
 	if (player > my_playernum)
 		player--;

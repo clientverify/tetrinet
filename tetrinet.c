@@ -23,7 +23,6 @@
 // Klee Support
 #include "klee_tetrinet.h"
 
-
 /*************************************************************************/
 
 int fancy = 0;		/* Fancy TTY graphics? */
@@ -33,7 +32,6 @@ int windows_mode = 0;	/* Try to be just like the Windows version? */
 int noslide = 0;	/* Disallow piece sliding? */
 int tetrifast = 0;	/* TetriFast mode? */
 int cast_shadow = 1;	/* Make pieces cast shadow? */
-
 int my_playernum = -1;	/* What player number are we? */
 char *my_nick;		/* And what is our nick? */
 WinInfo winlist[MAXWINLIST];  /* Winners' list from server */
@@ -44,6 +42,8 @@ char *teams[6];		/* Team names (NULL for not on a team) */
 int playing_game;	/* Are we currently playing a game? */
 int not_playing_game;	/* Are we currently watching people play a game? */
 int game_paused;	/* Is the game currently paused? */
+
+int random_input = 1;
 
 Interface *io;		/* Input/output routines */
 
@@ -383,6 +383,34 @@ void parse(char *buf)
 		 *     during a game, or when a player loses (sent by the losing
 		 *     player and from the server to all other players */
 
+	} else if (strcmp(cmd, "p") == 0) {   /* partial field */
+		int player, x, y, tile;
+
+		/* This looks confusing, but what it means is, ignore this message
+		 * if a game isn't going on. */
+		if (!playing_game && !not_playing_game)
+			return;
+		if (!(s = strtok(NULL, " ")))
+			return;
+		player = atoi(s);
+		player--;
+		if (!(s = strtok(NULL, " ")))
+			return;
+		y = atoi(s);
+
+		int i,j;
+		char *ptr = (char *) fields[player];
+		for (i = 0; i < FIELD_HEIGHT; i++) {
+			for (j = 0; j < FIELD_WIDTH; j++) {
+				if (i == y)
+					*ptr++ = 1;
+				else
+					*ptr++ = 0;
+			}
+		}
+		if (player != my_playernum-1)
+			io->draw_other_field(player+1);
+
 	} else if (strcmp(cmd, "f") == 0) {   /* field */
 		int player, x, y, tile;
 
@@ -689,6 +717,8 @@ int init(int ac, char **av)
 					cast_shadow = 0;
 				} else if (strcmp(av[i], "-fast") == 0) {
 					tetrifast = 1;
+				} else if (strcmp(av[i], "-random") == 0) {
+					random_input = 1;
 				} else {
 					fprintf(stderr, "Unknown option %s\n", av[i]);
 					help();
@@ -766,11 +796,13 @@ int main(int ac, char **av)
 	klee_init();
 #endif
 
+	g_partial_fields = 10;
+
 	if ((i = init(ac, av)) != 0)
 		return i;
 
 	IFKLEE(nuklear_merge());
-	IFKLEE(klee_increment_round());
+	klee_increment_round();
 	KPRINTF("Successful initialization");
 
 	for (;;) {
@@ -780,6 +812,9 @@ int main(int ac, char **av)
 		} else {
 			timeout = -1;
 		}
+		// Automatically start playing a game
+		if (!playing_game) sockprintf(server_sock, "startgame 1 %d", my_playernum);
+
 		i = io->wait_for_input(timeout);
 		if (i == -1) {
 			char buf[1024];
@@ -789,8 +824,10 @@ int main(int ac, char **av)
 				msg_text(BUFFER_PLINE, "*** Disconnected from Server");
 				break;
 			}
-			IFKLEE(nuklear_merge());
-			IFKLEE(klee_increment_round());
+			if (g_round <=5) {
+				IFKLEE(nuklear_merge());
+				klee_increment_round();
+			}
 		} else if (i == -2) {
 			tetris_timeout_action();
 		} else if (i == 12) {  /* Ctrl-L */
@@ -840,7 +877,7 @@ int main(int ac, char **av)
 	sprintf(buf, "quit %d", my_playernum);
 	sputs(buf, server_sock);
 
-	KPRINTF("Successful exit");
+	IFKLEE(klee_warning("SUCCESS"));
 	disconn(server_sock);
 
 	ktest_finish(0, NULL);

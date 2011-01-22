@@ -93,6 +93,8 @@ extern int playing_game;
 extern int not_playing_game;
 extern int game_paused;
 
+extern int random_input;
+
 extern Interface *io;
 
 /*************************************************************************/

@@ -12,32 +12,37 @@
 #include "KTest.h"
 
 #define KTEST_FILE "tetrinet.ktest"
-
-
-#ifdef KLEE
+static FILE *klee_logfile = NULL;
+char *klee_logname = "./klee.log";
 
 int g_round = 0;
 int g_last_round = 0;
 int g_new_piece = 0;
-int g_recv = 0;
-//int wait_for_input_count = 0;
+int g_partial_fields;
 
-static int nuklear_merge() { klee_warning("nuklear_merge"); return 0; }
-
-void klee_increment_round() {
-	g_round++;
-	KPRINTF("NEW ROUND");
-	klee_print_expr("round = ", g_round);
-}
-
-void klee_new_piece() {
-	g_new_piece = 1;
-	KPRINTF("new piece");
-}
-
-int inputs[32];
+#define INPUTS_LENGTH 32
+unsigned int inputs[INPUTS_LENGTH];
 int input_index = 0;
 char* input_strings[6] = {"UP", "LF", "RT", "SP", "QT", "INVALID"};
+
+void klee_increment_round() { g_round++; }
+void klee_new_piece() { g_new_piece = 1; }
+
+
+int nuklear_rand() {
+	static long a = 100001;
+	a = (a * 125) % 2796203;
+	return (a % RAND_MAX);
+}
+
+int nuklear_random() {
+	return nuklear_rand();
+}
+
+int klee_set_random_var(unsigned int *var, unsigned int max) {
+	if (max == 0) return 0;
+	*var = rand() % (max + 1);
+}
 
 char *klee_get_input_str(int val) {
 	if (val == K_UP)
@@ -53,44 +58,47 @@ char *klee_get_input_str(int val) {
 	return input_strings[5];
 }
 
+void klee_write_log(char* buf) {
+	if (!klee_logfile)
+		klee_logfile = fopen(klee_logname, "a");
+	if (klee_logfile) {
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		fprintf(klee_logfile, "[%d.%03d] KLEE %s\n",
+				(int) tv.tv_sec, (int) tv.tv_usec/1000, buf);
+		fflush(klee_logfile);
+	}
+}
+
 void klee_create_inputs() {
-	int rotations; // from 0 to 1
-	int do_quit;
-	int shifts;
-	int shift_type;
-	int direction;
+	unsigned int i=0, rotations, do_quit, shifts, shift_type;
 
-	int i = 0;
+	MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
+	MAKE_SYMBOLIC(&shifts,  "shifts", 5);
+	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
+	MAKE_SYMBOLIC(&rotations,"rotations", 2);
 
-	// TODO change to nuklear_symbolic
-	klee_nuklear_make_symbolic(&do_quit, "do_quit");
-	klee_nuklear_make_symbolic(&rotations,"rotations");
-	klee_nuklear_make_symbolic(&shifts,  "shifts");
-	klee_nuklear_make_symbolic(&shift_type, "shift_type");
-
-	if (do_quit == 0) {
+	if (do_quit == 1) {
 		inputs[i++] = K_F10;
 	} else {
 
 		switch (rotations) {
 			case 3:
-				inputs[i++] = K_UP;
+				inputs[i++] = KLEE_UP;
 			case 2:
-				inputs[i++] = K_UP;
+				inputs[i++] = KLEE_UP;
 			case 1:
-				inputs[i++] = K_UP;
+				inputs[i++] = KLEE_UP;
 			default:
 				break;
 		}
 
 		if (shift_type == 0)
-			shift_type = K_LEFT;
+			shift_type = KLEE_LEFT;
 		else
-			shift_type = K_RIGHT;
+			shift_type = KLEE_RIGHT;
 
 		switch (shifts) {
-			case 6:
-				inputs[i++] = shift_type;
 			case 5:
 				inputs[i++] = shift_type;
 			case 4:
@@ -101,6 +109,8 @@ void klee_create_inputs() {
 				inputs[i++] = shift_type;
 			case 1:
 				inputs[i++] = shift_type;
+			case 0:
+				inputs[i++] = shift_type;
 			default:
 				break;
 		}
@@ -108,6 +118,8 @@ void klee_create_inputs() {
 		inputs[i++] = ' ';
 	}
 	inputs[i++] = K_INVALID;
+	
+	// Print generated inputs
 	char buf[512];
 	char* bufp = buf;
 	int j = 0;
@@ -127,6 +139,7 @@ int klee_getch() {
 
 	int retval = inputs[input_index++];
 
+	// Print input
 	char buf[64];
 	sprintf(buf, "Round: %d Input[%d] = %s(%x)", 
 		g_round, input_index-1, klee_get_input_str(retval), retval);
@@ -137,82 +150,49 @@ int klee_getch() {
 		g_last_round = g_round;
 		g_new_piece = 0;
 		input_index = 0;
-		memset(inputs, 0, 32);
+		memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
 	}
 	return retval;
 }
 
+#ifdef KLEE
+
 // Returns either a network socket event or a key press (symbolic).
-// TODO: declare klee_fds symbolic using klee API and implement getch in klee.
 int klee_wait_for_input(int msec)
 {
 	int c;
 
-	//wait_for_input_count++;
-	//klee_print_expr("wait_for_input count = ", wait_for_input_count);
-
 	if (g_round > g_last_round && g_new_piece) {
-	//if (g_new_piece) {
 		return klee_getch();
 	}
 
 	KPRINTF("KLEE_NUKLEAR_MAKE_SYMBOLIC");
-	//klee_make_symbolic(&klee_fds, sizeof(klee_fds), "klee_fds");
 	
-	unsigned int *ev = malloc(sizeof (unsigned int));
-	klee_nuklear_make_symbolic(ev, "ev");
+	unsigned int ev;
+	klee_nuklear_make_symbolic(&ev, "ev");
 
-	//if (*ev > 2)
-	//  KEXIT;
+	if (ev > 2)
+	  KEXIT;
 
-	if (*ev == 1) {
+	if (ev == 1) {
  		if (msec == -1) {
-			//klee_print_expr("ev: ", *ev);
-			free(ev);
  			KPRINTF("select timeout event (invalid, exiting)");
- 			//klee_print_expr("WFI: ", wait_for_input_count);
  			KEXIT;
  		}
-		//klee_print_expr("ev: ", *ev);
- 		free(ev);
  		KPRINTF("select timeout event");
- 		//klee_print_expr("WFI: ", wait_for_input_count);
  		return -2;	/* out of time */
 	} 
-	if (*ev == 2) {
-		//klee_print_expr("ev: ", *ev);
- 		free(ev);
+
+	if (ev == 2) {
 		KPRINTF("server message event");
-		//klee_print_expr("WFI: ", wait_for_input_count);
 		return -1;
 	}
-	//switch (*klee_fds) {
-	//	case 1: {
-	//		free(klee_fds);
-	//		if (msec == -1) {
-	//			KPRINTF("select timeout event (invalid, exiting)");
-	//			klee_print_expr("WFI: ", wait_for_input_count);
-	//			KEXIT;
-	//		}
-	//		KPRINTF("select timeout event");
-	//		klee_print_expr("WFI: ", wait_for_input_count);
-	//		return -2;	/* out of time */
-	//	} break;
-	//	case 2: {
-	//		free(klee_fds);
-	//		KPRINTF("server message event");
-	//		klee_print_expr("WFI: ", wait_for_input_count);
-	//		return -1;
-	//	} break;
-	//	default: {
-	//		free(klee_fds);
-	//	} break;
-	//}
-	free(ev);
-	//KPRINTF("klee exit");
-	//klee_print_expr("WFI: ", wait_for_input_count);
+
 	KEXIT;
 }
+
+// Merge point function
+static int nuklear_merge() { klee_warning("nuklear_merge"); return 0; }
 
 // Stub functions used by stub interface.
 void klee_void() { return; }
@@ -249,16 +229,6 @@ void klee_init() {
 }
 
 #endif
-
-int nuklear_rand() {
-	static long a = 100001;
-	a = (a * 125) % 2796203;
-	return (a % RAND_MAX);
-}
-
-int nuklear_random() {
-	return nuklear_rand();
-}
 
 
 #if !defined(KTEST) 

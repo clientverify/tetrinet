@@ -385,12 +385,38 @@ static void place_specials(int num)
  * send the complete field.
  */
 
+
+static void send_partial_field(Field *oldfield)
+{
+	Field *f = &fields[my_playernum-1];
+	int i, x, y, y_start = -1;
+	char buf[512], *s;
+
+	for (y = 0; y < FIELD_HEIGHT; y++) {
+		for (x = 0; x < FIELD_WIDTH; x++) {
+			if (y_start == -1 && (*f)[y][x] != 0)
+				y_start = y;
+		} /* for x */
+	} /* for y */
+
+	//s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
+	s = buf + sprintf(buf, "p %d %d", my_playernum, current_x);
+	s++;
+	*s = 0;
+	sputs(buf, server_sock);
+}
+
 static void send_field(Field *oldfield)
 {
 	Field *f = &fields[my_playernum-1];
 	int i, x, y, diff = 0;
 	char buf[512], *s;
 
+	if (g_round > 5  && g_partial_fields && g_round % g_partial_fields != 0) {
+		send_partial_field(oldfield);
+		return;
+	}
+	
 	if (oldfield) {
 		for (y = 0; y < FIELD_HEIGHT; y++) {
 			for (x = 0; x < FIELD_WIDTH; x++) {
@@ -401,6 +427,9 @@ static void send_field(Field *oldfield)
 	} else {
 		diff = FIELD_WIDTH * FIELD_HEIGHT;
 	}
+
+	diff = FIELD_WIDTH * FIELD_HEIGHT;
+
 	if (diff < (FIELD_WIDTH*FIELD_HEIGHT)/2) {
 		s = buf + sprintf(buf, "f %d ", my_playernum);
 		for (i = 0; i < 15; i++) {
@@ -420,8 +449,6 @@ static void send_field(Field *oldfield)
 		} /* for i (each tile type) */
 	} /* difference check */
 	/* -4 below is to adjust for "f %d " */
-	//IFKLEE(printf("send_field: diff=%d, WxH=%d, strlen(buf)-4=%d\n",
-	//			diff, (FIELD_WIDTH*FIELD_HEIGHT), strlen(buf)-4));
 	if (diff >= (FIELD_WIDTH*FIELD_HEIGHT)/2
 			|| strlen(buf)-4 > FIELD_WIDTH*FIELD_HEIGHT) {
 		static const char specials[] = "acnrsbgqo";
@@ -435,11 +462,9 @@ static void send_field(Field *oldfield)
 			}
 		}
 	}
-	IFKLEE(klee_increment_round());
-	IFKLEE(nuklear_merge());
 	*s = 0;
+	//if (g_round <= 5 || g_round%2 != 0)
 	sputs(buf, server_sock);
-
 }
 
 /*************************************************************************/
@@ -452,7 +477,7 @@ void new_piece(void)
 	int n;
 	PieceData *pd;
 
-	IFKLEE(klee_new_piece());
+	klee_new_piece();
 
 	current_piece = next_piece;
 	n = nuklear_rand() % 100;
@@ -491,6 +516,9 @@ void new_piece(void)
 	timeout.tv_sec += timeout.tv_usec / 1000000;
 	timeout.tv_usec %= 1000000;
 	piece_waiting = 0;
+
+	klee_increment_round();
+	IFKLEE(nuklear_merge());
 }
 
 /*************************************************************************/
