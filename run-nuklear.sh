@@ -4,7 +4,7 @@
 BASEDIR="/playpen2/rac/games/tetrinet"
 KLEEOUT="$BASEDIR/nuklear-results-tetrinet"
 BCFILE="$BASEDIR/tetrinet.bc "
-BCOPTIONS=" p1 localhost "
+BCOPTIONS=" -autostart p1 localhost "
 
 RUNPREFIX=$(date +%F.%T)
 
@@ -36,6 +36,12 @@ else
   KLEEOUT=$4 
 fi
 
+if  test -z "$5" 
+then
+	BCOPTIONS=" -autostart p1 localhost "
+else
+	BCOPTIONS=$5
+fi
 #if  test -z "$5" 
 #then 
 #  #BCFILE="/playpen/gsec/svn/bin/ktest_client.bc"
@@ -46,6 +52,7 @@ fi
 
 #---------------------------------------------------------------------
 
+#echo "BCOPTIONS: $BCOPTIONS"
 
 mkdir -p $KLEEOUT/{log,output,run-dir,selected-logs} ;
 /bin/ln -sf $KLEEOUT/output/$RUNPREFIX.output $KLEEOUT/last-output ; 
@@ -85,7 +92,7 @@ KLEECOMMAND+=" -no-xwindows "
 #KLEECOMMAND+=" -debug-print-instructions"
 #KLEECOMMAND+=" -debug-log-merge "
 #KLEECOMMAND+=" -debug-log-state-merge "
- 
+
 #KLEECOMMAND+=" -debug-nuklear-merge "
 #KLEECOMMAND+=" -debug-nuklear-remaining-merge "
 #KLEECOMMAND+=" -nuklear-dbg=Details" 
@@ -108,7 +115,7 @@ KLEECOMMAND+=" -nuklear-prune-hack=true "
 
 KLEECOMMAND+=" -nuklear-merge-digest "
 
-KLEECOMMAND+=" -max-rounds 100 "
+KLEECOMMAND+=" -max-rounds 2000 "
 #KLEECOMMAND+=" -queue-size 4 "
 
 #KLEECOMMAND+=" -nuklear-xpilot-mode "
@@ -129,7 +136,8 @@ KLEECOMMAND+=" $BCFILE $BCOPTIONS "
 
 if [ "$DEBUG" == "release" ]
 then
-  KLEECOMMAND+=" 2>&1 | tee $KLEEOUT/log/$RUNPREFIX.log " 
+  #KLEECOMMAND+=" 2>&1 | tee $KLEEOUT/log/$RUNPREFIX.log " 
+  KLEECOMMAND+=" &> $KLEEOUT/log/$RUNPREFIX.log " 
   echo "$KLEECOMMAND" > $KLEEOUT/log/$RUNPREFIX.command ; bash $KLEEOUT/log/$RUNPREFIX.command
 else
   echo "$KLEECOMMANDLOG" > $KLEEOUT/log/$RUNPREFIX.command ; echo "$KLEECOMMAND" >> $KLEEOUT/log/$RUNPREFIX.command ; gdb $BINDIR/nuklear -x $KLEEOUT/log/$RUNPREFIX.command

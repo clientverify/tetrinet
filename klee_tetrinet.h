@@ -16,6 +16,7 @@ extern int g_new_piece;
 #define KPRINTF(x) //klee_warning(x)
 #define KEXIT klee_silent_exit(1);
 #define MAKE_SYMBOLIC(x,y,z) klee_nuklear_make_symbolic(x,y)
+#define KLEE_MOD(x, y) if (x > y) klee_silent_exit(1);
 
 #define KLEE_UP K_UP
 #define KLEE_DOWN K_DOWN
@@ -29,6 +30,8 @@ extern int g_new_piece;
 
 #define MAKE_SYMBOLIC(x,y,z)  klee_set_random_var(x,z)
 //#define MAKE_SYMBOLIC(x,y,z)
+
+#define KLEE_MOD(x, y) x = x % (y + 1);
 
 #define KPRINTF(x) 
 //#define KPRINTF(x) klee_write_log(x)

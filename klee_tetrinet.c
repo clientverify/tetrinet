@@ -33,13 +33,19 @@ int nuklear_rand() {
 	return (a % RAND_MAX);
 }
 
+int nuklear_rand2() {
+	random_seed = (random_seed * 1103515245) + 12345;
+	return (unsigned int)(random_seed / 65536) % 32768;
+}
+
 int nuklear_random() {
 	return nuklear_rand();
 }
 
 int klee_set_random_var(unsigned int *var, unsigned int max) {
-	if (max == 0) return 0;
-	*var = rand() % (max + 1);
+	//if (max == 0) return 0;
+	//*var = rand() % (max + 1);
+	*var = rand();
 }
 
 char *klee_get_input_str(int val) {
@@ -68,10 +74,16 @@ void klee_write_log(char* buf) {
 	}
 }
 
+void do_klee_mod(unsigned int *i, unsigned int max) {
+
+
+}
+
 void klee_create_inputs() {
-	unsigned int i=0, rotations, do_quit, shifts, shift_type;
+	unsigned int i=0, rotations, do_quit, shifts, shift_type,do_invalid;
 
 	MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
+	MAKE_SYMBOLIC(&do_invalid, "do_invalid", 1);
 	MAKE_SYMBOLIC(&shifts,  "shifts", 5);
 	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
 	MAKE_SYMBOLIC(&rotations,"rotations", 2);
@@ -79,6 +91,80 @@ void klee_create_inputs() {
 	if (do_quit == 1) {
 		inputs[i++] = K_F10;
 	} else {
+
+		KLEE_MOD(shift_type, 1);
+		if (shift_type == 0)
+			shift_type = KLEE_LEFT;
+		else
+			shift_type = KLEE_RIGHT;
+
+		//    Piece Types: 
+		//    0    1    2    3    4    5    6
+		//    ##X# .... .... .... .... .... ....
+		//    .... .X#. #X#. #X#. #X.. .X#. #X#.
+		//    .... .##. ..#. #... .##. ##.. .#..
+		//    .... .... .... .... .... .... ....
+		//    Rotational Positions:
+		//    2    1    4    4    2    2    4
+		//   
+		//    Max Moves Left in each Rotation
+		// 1  4    6    5    5    5    5    5   
+		// 2  6    .    5    5    5    5    5  
+		// 3  .    .    5    5    .    .    5  
+		// 4  .    .    6    6    .    .    6    
+		//
+		//    Max Moves Right in each Rotation
+		// 1  4    4    4    4    4    4    4    
+		// 2  5    .    5    5    5    5    5   
+		// 3  .    .    4    4    .    .    4   
+		// 4  .    .    4    4    .    .    4     
+	
+		if (current_piece == 1) {
+			rotations = 0;
+			if (shift_type == 0)
+				KLEE_MOD(shifts, 6);
+			else
+				KLEE_MOD(shifts, 4);
+		}
+
+		if (current_piece == 0) {
+			KLEE_MOD(rotations, 1);
+			if (shift_type == 0)
+				if (rotations == 0)
+					KLEE_MOD(shifts, 4);
+			  else
+					KLEE_MOD(shifts, 6);
+			else
+				if (rotations == 0)
+					KLEE_MOD(shifts, 4);
+				else
+					KLEE_MOD(shifts, 5);
+		}
+	
+		if (current_piece == 4 || current_piece == 5) {
+			KLEE_MOD(rotations, 1);
+			if (shift_type == 0)
+				KLEE_MOD(shifts, 5);
+			else
+				if (rotations == 0)
+					KLEE_MOD(shifts, 4);
+				else
+					KLEE_MOD(shifts, 5);
+		}
+	
+		if (current_piece == 2 || current_piece == 3 || current_piece == 6) {
+			KLEE_MOD(rotations, 3);
+			if (shift_type == 0)
+				if (rotations == 3)
+					KLEE_MOD(shifts, 6);
+			  else
+					KLEE_MOD(shifts, 5);
+			else
+				if (rotations == 1)
+					KLEE_MOD(shifts, 5);
+				else
+					KLEE_MOD(shifts, 4);
+		}
 
 		switch (rotations) {
 			case 3:
@@ -91,12 +177,9 @@ void klee_create_inputs() {
 				break;
 		}
 
-		if (shift_type == 0)
-			shift_type = KLEE_LEFT;
-		else
-			shift_type = KLEE_RIGHT;
-
 		switch (shifts) {
+			case 6:
+				inputs[i++] = shift_type;
 			case 5:
 				inputs[i++] = shift_type;
 			case 4:
@@ -107,27 +190,29 @@ void klee_create_inputs() {
 				inputs[i++] = shift_type;
 			case 1:
 				inputs[i++] = shift_type;
-			case 0:
-				inputs[i++] = shift_type;
 			default:
 				break;
 		}
 
+		if (do_invalid)
+			inputs[i++] = K_INVALID;
+
 		inputs[i++] = ' ';
 	}
-	inputs[i++] = K_INVALID;
+	inputs[i++] = 0xDEADBEEF;
+	//inputs[i++] = K_INVALID;
 	
-	// Print generated inputs
-	char buf[512];
-	char* bufp = buf;
-	int j = 0;
-	
-	bufp = bufp + sprintf(bufp, "Round %d input sequence : ", g_round);
-	for (j = 0; j<i; j++) {
-		char *input_str = klee_get_input_str(inputs[j]);
-		bufp = bufp + sprintf(bufp, "%s, ", input_str);
-	}
-	KPRINTF(buf);
+	//// Print generated inputs
+	//char buf[512];
+	//char* bufp = buf;
+	//int j = 0;
+	//
+	//bufp = bufp + sprintf(bufp, "Round %d input sequence : ", g_round);
+	//for (j = 0; j<i; j++) {
+	//	char *input_str = klee_get_input_str(inputs[j]);
+	//	bufp = bufp + sprintf(bufp, "%s, ", input_str);
+	//}
+	//KPRINTF(buf);
 }
 
 int klee_getch() {
@@ -137,13 +222,13 @@ int klee_getch() {
 
 	int retval = inputs[input_index++];
 
-	// Print input
-	char buf[64];
-	sprintf(buf, "Round: %d Input[%d] = %s(%x)", 
-		g_round, input_index-1, klee_get_input_str(retval), retval);
-	KPRINTF(buf);
+	//// Print input
+	//char buf[64];
+	//sprintf(buf, "Round: %d Input[%d] = %s(%x)", 
+	//	g_round, input_index-1, klee_get_input_str(retval), retval);
+	//KPRINTF(buf);
 
-	if (inputs[input_index] == K_INVALID) {
+	if (inputs[input_index] == 0xDEADBEEF) {
 		KPRINTF("last user input event");
 		g_last_round = g_round;
 		g_new_piece = 0;

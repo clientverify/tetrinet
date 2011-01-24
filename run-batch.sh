@@ -33,6 +33,9 @@ COUNT=5
 minR=2
 maxR=10
 stepR=2
+
+SERVER_ADDRESS="localhost"
+PLAYER_NAME="p1"
 ####################
 RUN_PREFIX=$(date +%F.%T)
 
@@ -53,8 +56,12 @@ do
 			DESC="tetrinet_"$zpad_i"_type-"$ptype"_rate-"$zpad_rate
 			KTEST_FILE=$KTEST_DIR/$DESC"."$KTEST_SUFFIX
 
+			OPTS=" -autostart -partialtype $ptype -partialrate $rate"
+			OPTS+=" $PLAYER_NAME $SERVER_ADDRESS "
 			echo "Starting verification of $KTEST_FILE"
-			bash $SCRIPT release $KTEST_FILE `basename $KTEST_FILE .$KTEST_SUFFIX` $OUT_DIR &
+			#echo "bash $SCRIPT release $KTEST_FILE `basename $KTEST_FILE .$KTEST_SUFFIX` $OUT_DIR \"$OPTS\" &"
+			bash $SCRIPT release $KTEST_FILE `basename $KTEST_FILE .$KTEST_SUFFIX` $OUT_DIR "$OPTS" &
+			#bash $SCRIPT release $KTEST_FILE `basename $KTEST_FILE .$KTEST_SUFFIX` $OUT_DIR "$OPTS"
 			sleep 1
 		done
 

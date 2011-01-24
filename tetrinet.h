@@ -92,6 +92,7 @@ extern char *teams[6];
 extern int playing_game;
 extern int not_playing_game;
 extern int game_paused;
+extern int current_piece;
 
 extern int random_input;
 extern int partial_field;
