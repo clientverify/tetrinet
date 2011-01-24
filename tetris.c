@@ -518,10 +518,12 @@ void new_piece(void)
 	draw_piece(1);
 	io->draw_status();
 	io->draw_own_field();
+#ifndef KLEE
 	gettimeofday(&timeout, NULL);
 	timeout.tv_usec += level_delay() * 1000;
 	timeout.tv_sec += timeout.tv_usec / 1000000;
 	timeout.tv_usec %= 1000000;
+#endif
 	piece_waiting = 0;
 
 	klee_increment_round();
@@ -548,10 +550,12 @@ void step_down(void)
 		current_y++;
 		draw_piece(1);
 		io->draw_own_field();
+#ifndef KLEE
 		gettimeofday(&timeout, NULL);
 		timeout.tv_usec += level_delay() * 1000;
 		timeout.tv_sec += timeout.tv_usec / 1000000;
 		timeout.tv_usec %= 1000000;
+#endif
 	} else {
 		int completed, level, nspecials;
 		Field oldfield;
@@ -587,10 +591,12 @@ void step_down(void)
 		io->draw_own_field();
 		send_field(&oldfield);
 		piece_waiting = 1;
+#ifndef KLEE
 		gettimeofday(&timeout, NULL);
 		timeout.tv_usec += tetrifast ? 0 : 600000;
 		timeout.tv_sec += timeout.tv_usec / 1000000;
 		timeout.tv_usec %= 1000000;
+#endif
 	}
 }
 
@@ -860,10 +866,12 @@ void new_game(void)
 {
 	int n;
 
+#ifndef KLEE
 	gettimeofday(&timeout, NULL);
 	timeout.tv_usec += 1200000;
 	timeout.tv_sec += timeout.tv_usec / 1000000;
 	timeout.tv_usec %= 1000000;
+#endif
 	piece_waiting = 1;
 	n = nuklear_rand() % 100;
 	next_piece = 0;
