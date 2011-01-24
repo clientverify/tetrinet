@@ -1,6 +1,15 @@
 #!/bin/bash
 
-GAME_ROOT="/playpen2/rac/games/tetrinet"
+if [[ $HOSTNAME == "kudzoo" ]] 
+then
+  GAME_ROOT="/home/rac/research/games/tetris/tetrinet"
+elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
+then
+  GAME_ROOT="/playpen2/rac/games/tetrinet"
+else
+  echo "Set correct configuration dirs in $0"
+  exit
+fi
 
 SERVER_BIN="tetrinet-server"
 SERVER_OPT=" "

@@ -1,6 +1,16 @@
 #!/bin/bash
 
-BASE_DIR="/playpen2/rac/games/tetrinet"
+if [[ $HOSTNAME == "kudzoo" ]] 
+then
+  BASE_DIR="/home/rac/research/games/tetris/tetrinet"
+elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
+then
+  BASE_DIR="/playpen2/rac/games/tetrinet"
+else
+  echo "Set correct configuration dirs in $0"
+  exit
+fi
+
 DATA_DIR=$BASE_DIR/"data_tetrinet"
 RESULTS_DIR=$BASE_DIR/"results_tetrinet"
 
