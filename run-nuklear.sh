@@ -1,7 +1,18 @@
 #!/bin/bash
 
-#BASEDIR="/home/rac/research/games/tetris/tetrinet"
-BASEDIR="/playpen2/rac/games/tetrinet"
+if [[ $HOSTNAME == "kudzoo" ]] 
+then
+  BASEDIR="/home/rac/research/games/tetris/tetrinet"
+  KLEE_DIR="/home/rac/research/gsec/src/klee/"
+elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
+then
+  BASEDIR="/playpen2/rac/games/tetrinet"
+  KLEE_DIR="/playpen2/rac/gsec/src/klee/"
+else
+  echo "Set correct configuration dirs in $0"
+  exit
+fi
+
 KLEEOUT="$BASEDIR/nuklear-results-tetrinet"
 BCFILE="$BASEDIR/tetrinet.bc "
 BCOPTIONS=" -autostart p1 localhost "
@@ -66,12 +77,10 @@ fi
 
 if [ "$DEBUG" == "release" ]
 then
-  #BINDIR="/home/rac/research/gsec/src/klee/Release/bin"
-  BINDIR="/playpen2/rac/gsec/src/klee/Release/bin"
+  BINDIR=$KLEE_DIR"/Release/bin"
   KLEECOMMAND="time $BINDIR/nuklear --run-in=$KLEEOUT/run-dir/ --output-dir=$KLEEOUT/output/$RUNPREFIX.output "
 else
-  #BINDIR="/home/rac/research/gsec/src/klee/Debug/bin"
-  BINDIR="/playpen2/rac/gsec/src/klee/Debug/bin"
+  BINDIR=$KLEE_DIR"/Debug/bin"
   KLEECOMMAND="run --run-in=$KLEEOUT/run-dir/ --output-dir=$KLEEOUT/output/$RUNPREFIX.output "
   KLEECOMMANDLOG="set logging on $KLEEOUT/log/$RUNPREFIX.log"
 fi

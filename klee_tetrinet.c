@@ -74,11 +74,6 @@ void klee_write_log(char* buf) {
 	}
 }
 
-void do_klee_mod(unsigned int *i, unsigned int max) {
-
-
-}
-
 void klee_create_inputs() {
 	unsigned int i=0, rotations, do_quit, shifts, shift_type,do_invalid;
 
@@ -121,49 +116,58 @@ void klee_create_inputs() {
 	
 		if (current_piece == 1) {
 			rotations = 0;
-			if (shift_type == 0)
+			if (shift_type == 0) {
 				KLEE_MOD(shifts, 6);
-			else
+			} else {
 				KLEE_MOD(shifts, 4);
+			}
 		}
 
 		if (current_piece == 0) {
 			KLEE_MOD(rotations, 1);
-			if (shift_type == 0)
-				if (rotations == 0)
+			if (shift_type == 0) {
+				if (rotations == 0) {
 					KLEE_MOD(shifts, 4);
-			  else
+				} else {
 					KLEE_MOD(shifts, 6);
-			else
-				if (rotations == 0)
+				}
+			} else {
+				if (rotations == 0) {
 					KLEE_MOD(shifts, 4);
-				else
+				} else {
 					KLEE_MOD(shifts, 5);
+				}
+			}
 		}
 	
 		if (current_piece == 4 || current_piece == 5) {
 			KLEE_MOD(rotations, 1);
-			if (shift_type == 0)
+			if (shift_type == 0) {
 				KLEE_MOD(shifts, 5);
-			else
-				if (rotations == 0)
+			} else {
+				if (rotations == 0) {
 					KLEE_MOD(shifts, 4);
-				else
+				} else {
 					KLEE_MOD(shifts, 5);
+				}
+			}
 		}
 	
 		if (current_piece == 2 || current_piece == 3 || current_piece == 6) {
 			KLEE_MOD(rotations, 3);
-			if (shift_type == 0)
-				if (rotations == 3)
+			if (shift_type == 0) {
+				if (rotations == 3) {
 					KLEE_MOD(shifts, 6);
-			  else
+			  } else {
 					KLEE_MOD(shifts, 5);
-			else
-				if (rotations == 1)
+				}
+			} else {
+				if (rotations == 1) {
 					KLEE_MOD(shifts, 5);
-				else
+				} else {
 					KLEE_MOD(shifts, 4);
+				}
+			}
 		}
 
 		switch (rotations) {
