@@ -328,7 +328,6 @@ void ktest_copy(void *buf, size_t num_bytes, int name_type) {
 
 void ktest_finish(int argc, char** argv) {
   ++num_ktest_objects;
-  fprintf(stdout, "Writing KTest file.\n");
   KTest ktest;
   ktest.numArgs = argc;
   ktest.args = argv;
@@ -337,13 +336,14 @@ void ktest_finish(int argc, char** argv) {
   ktest.numObjects = num_ktest_objects;
   ktest.objects = ktest_objects;
   int i;
-  for (i = 0; i<num_ktest_objects; i++) {
-    printf("ktest_object[%d].name = %s : %d : %s \n",
-           i, ktest_objects[i].name, 
-					 ktest_objects[i].numBytes,
-					 ktest_objects[i].bytes);
-  }
-  int result = kTest_toFile(&ktest, KTEST_FILE);
+  //fprintf(stdout, "Writing KTest file.\n");
+  //for (i = 0; i<num_ktest_objects; i++) {
+  //  printf("ktest_object[%d].name = %s : %d : %s \n",
+  //         i, ktest_objects[i].name, 
+	//				 ktest_objects[i].numBytes,
+	//				 ktest_objects[i].bytes);
+  //}
+  int result = kTest_toFile(&ktest, ktest_filename);
   if (!result) {
     fprintf(stderr, "ERROR in ktest_finish\n");
   }

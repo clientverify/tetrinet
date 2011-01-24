@@ -40,7 +40,8 @@ endif
 ifdef KLEE 
 	CC = llvm-gcc
 	#LD = /home/rac/research/gsec/local/llvm-2.7/bin/llvm-ld -disable-opt
-	LD = /home/rac/research/gsec/local/llvm-2.7/bin/llvm-ld
+	#LD = /home/rac/research/gsec/local/llvm-2.7/bin/llvm-ld
+	LD = /playpen2/rac/gsec/local/llvm-2.7/bin/llvm-ld
 	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm -g
 	LDFLAGS = 
 	SERVER_CFLAGS =

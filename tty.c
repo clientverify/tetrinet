@@ -57,7 +57,7 @@ static int wait_for_input(int msec)
 	if (random_input) {
 		if (msec > 0) { 
 			tv.tv_sec = 0;
-			tv.tv_usec = 100000;
+			tv.tv_usec = 0;
 		}
 		timeout_skip = timeout_skip ^ 1;
 		if (msec > 0) 

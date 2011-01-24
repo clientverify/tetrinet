@@ -5,10 +5,6 @@ make KTEST=1 tetrinet
 cp tetrinet tetrinet-ktest
 
 rm -f *.o
-make KTEST=1 RAND=1 tetrinet
-cp tetrinet tetrinet-ktest-rand
-
-rm -f *.o
 make tetrinet 
 cp tetrinet tetrinet-native
 

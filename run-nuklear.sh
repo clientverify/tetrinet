@@ -1,9 +1,10 @@
 #!/bin/bash
 
-BASEDIR="/home/rac/research/games/tetris/tetrinet"
+#BASEDIR="/home/rac/research/games/tetris/tetrinet"
+BASEDIR="/playpen2/rac/games/tetrinet"
 KLEEOUT="$BASEDIR/nuklear-results-tetrinet"
 BCFILE="$BASEDIR/tetrinet.bc "
-BCOPTIONS=" p2 localhost "
+BCOPTIONS=" p1 localhost "
 
 RUNPREFIX=$(date +%F.%T)
 
@@ -28,13 +29,13 @@ else
   SELECTIONNAME=$3
 fi
 
-#if  test -z "$4"
-#then 
-#  KLEEOUT="/playpen/gsec/results-lazy-xpilot"
-#else
-#  KLEEOUT=$4 
-#fi
-#
+if  test -z "$4"
+then 
+	KLEEOUT="$BASEDIR/nuklear-results-tetrinet"
+else
+  KLEEOUT=$4 
+fi
+
 #if  test -z "$5" 
 #then 
 #  #BCFILE="/playpen/gsec/svn/bin/ktest_client.bc"
@@ -58,11 +59,12 @@ fi
 
 if [ "$DEBUG" == "release" ]
 then
-  BINDIR="/home/rac/research/gsec/src/klee/Debug/bin"
-  BINDIR="/home/rac/research/gsec/src/klee/Release/bin"
+  #BINDIR="/home/rac/research/gsec/src/klee/Release/bin"
+  BINDIR="/playpen2/rac/gsec/src/klee/Release/bin"
   KLEECOMMAND="time $BINDIR/nuklear --run-in=$KLEEOUT/run-dir/ --output-dir=$KLEEOUT/output/$RUNPREFIX.output "
 else
-  BINDIR="/home/rac/research/gsec/src/klee/Debug/bin"
+  #BINDIR="/home/rac/research/gsec/src/klee/Debug/bin"
+  BINDIR="/playpen2/rac/gsec/src/klee/Debug/bin"
   KLEECOMMAND="run --run-in=$KLEEOUT/run-dir/ --output-dir=$KLEEOUT/output/$RUNPREFIX.output "
   KLEECOMMANDLOG="set logging on $KLEEOUT/log/$RUNPREFIX.log"
 fi
@@ -73,7 +75,7 @@ KLEECOMMAND+=" -only-error-output "
 #KLEECOMMAND+=" -all-external-warnings "
 KLEECOMMAND+=" -no-output "
 KLEECOMMAND+=" -check-div-zero=0 -posix-runtime -emit-all-errors "
-KLEECOMMAND+=" -use-cex-cache=0 -use-fast-cex-solver=0 "
+#KLEECOMMAND+=" -use-cex-cache=0 -use-fast-cex-solver=0 "
 #KLEECOMMAND+=" -libc=uclibc "
 
 KLEECOMMAND+=" -no-xwindows "
@@ -84,7 +86,7 @@ KLEECOMMAND+=" -no-xwindows "
 #KLEECOMMAND+=" -debug-log-merge "
 #KLEECOMMAND+=" -debug-log-state-merge "
  
-KLEECOMMAND+=" -debug-nuklear-merge "
+#KLEECOMMAND+=" -debug-nuklear-merge "
 #KLEECOMMAND+=" -debug-nuklear-remaining-merge "
 #KLEECOMMAND+=" -nuklear-dbg=Details" 
 #KLEECOMMAND+=" -nuklear-dbg-socket-failure " 
@@ -106,7 +108,7 @@ KLEECOMMAND+=" -nuklear-prune-hack=true "
 
 KLEECOMMAND+=" -nuklear-merge-digest "
 
-KLEECOMMAND+=" -max-rounds 2000 "
+KLEECOMMAND+=" -max-rounds 100 "
 #KLEECOMMAND+=" -queue-size 4 "
 
 #KLEECOMMAND+=" -nuklear-xpilot-mode "

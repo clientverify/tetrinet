@@ -49,6 +49,9 @@ int partial_field = 0;
 int partial_field_rate = 5;
 int partial_field_type = 1;
 int random_seed = -1;
+int max_round = -1;
+int autostart = 0;
+char *ktest_filename = "tetrinet.ktest";
 
 Interface *io;		/* Input/output routines */
 
@@ -691,7 +694,7 @@ int init(int ac, char **av)
 	if (random_seed == -1)
 		srand(time(NULL));
 	else 
-		srand(random_seed)
+		srand(random_seed);
 
 	init_shapes();
 
@@ -726,6 +729,8 @@ int init(int ac, char **av)
 					cast_shadow = 0;
 				} else if (strcmp(av[i], "-fast") == 0) {
 					tetrifast = 1;
+				} else if (strcmp(av[i], "-autostart") == 0) {
+					autostart = 1;
 				} else if (strcmp(av[i], "-random") == 0) {
 					random_input = 1;
 				} else if (strcmp(av[i], "-partialtype") == 0) {
@@ -751,7 +756,20 @@ int init(int ac, char **av)
 						return 1;
 					}
 					random_seed = atoi(av[i]);
-
+				} else if (strcmp(av[i], "-maxround") == 0) {
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -maxround requires an argument\n");
+						return 1;
+					}
+					max_round = atoi(av[i]);
+				} else if (strcmp(av[i], "-ktest") == 0) {
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -ktest requires an argument\n");
+						return 1;
+					}
+					ktest_filename = av[i];
 				} else {
 					fprintf(stderr, "Unknown option %s\n", av[i]);
 					help();
@@ -843,27 +861,28 @@ int main(int ac, char **av)
 		} else {
 			timeout = -1;
 		}
-		// Automatically start playing a game
-		if (!playing_game) sockprintf(server_sock, "startgame 1 %d", my_playernum);
 
 		i = io->wait_for_input(timeout);
 		if (i == -1) {
 			char buf[1024];
-			if (sgets(buf, sizeof(buf), server_sock))
+			if (sgets(buf, sizeof(buf), server_sock)) {
 				parse(buf);
-			else {
+
+				// Automatically start playing a game
+				if (autostart && strncmp(buf, "winlist", 7) == 0)
+					sockprintf(server_sock, "startgame 1 %d", my_playernum);
+
+				klee_increment_round();
+				IFKLEE(nuklear_merge());
+			} else {
 				msg_text(BUFFER_PLINE, "*** Disconnected from Server");
 				break;
-			}
-			if (g_round <=5) {
-				IFKLEE(nuklear_merge());
-				klee_increment_round();
 			}
 		} else if (i == -2) {
 			tetris_timeout_action();
 		} else if (i == 12) {  /* Ctrl-L */
 			io->screen_redraw();
-		} else if (i == K_F10) {
+		} else if (i == K_F10 || g_round == max_round) {
 			break;  /* out of main loop */
 		} else if (i == K_F1) {
 			if (dispmode != MODE_FIELDS) {

@@ -402,11 +402,11 @@ static void send_partial_field(Field *oldfield)
 	if (partial_field_type == 1) 
 		s = buf + sprintf(buf, "p %d %d", my_playernum, y_start);
 	else if (partial_field_type == 2) 
-		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
-	else if (partial_field_type == 2) 
-		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
-	else if (partial_field_type == 3) 
 		s = buf + sprintf(buf, "p %d %d", my_playernum, current_x);
+	else if (partial_field_type == 3) 
+		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
+	else if (partial_field_type == 4) 
+		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_x);
 
 	s++;
 	*s = 0;

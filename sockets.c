@@ -79,7 +79,7 @@ char *sgets(char *buf, int len, int s)
 		if (logfile) {
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
-			fprintf(logfile, "[%d.%03d] <<< %s\n",
+			fprintf(logfile, "[%03d][%d.%03d] <<< %s\n", g_round,
 					(int) tv.tv_sec, (int) tv.tv_usec/1000, buf);
 			fflush(logfile);
 		}
@@ -102,7 +102,7 @@ int sputs(const char *str, int s)
 		if (logfile) {
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
-			fprintf(logfile, "[%d.%03d] >>> %s\n",
+			fprintf(logfile, "[%03d][%d.%03d] >>> %s\n", g_round,
 					(int) tv.tv_sec, (int) tv.tv_usec/1000, str);
 		}
 	}
