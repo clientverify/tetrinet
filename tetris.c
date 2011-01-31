@@ -385,29 +385,45 @@ static void place_specials(int num)
  * send the complete field.
  */
 
-
-static void send_partial_field(Field *oldfield)
+static void send_partial_field(Field *oldfield, int pftype)
 {
 	Field *f = &fields[my_playernum-1];
 	int i, x, y, y_start = -1;
 	char buf[512], *s;
 
-	for (y = 0; y < FIELD_HEIGHT; y++) {
-		for (x = 0; x < FIELD_WIDTH; x++) {
-			if (y_start == -1 && (*f)[y][x] != 0)
-				y_start = y;
-		} /* for x */
-	} /* for y */
+	if ( pftype == 4 || pftype == 5 || pftype == 6 ) {
+		for (y = 0; y < FIELD_HEIGHT; y++) {
+			for (x = 0; x < FIELD_WIDTH; x++) {
+				if (y_start == -1 && (*f)[y][x] != 0)
+					y_start = y;
+			} /* for x */
+		} /* for y */
+	}
 
-	if (partial_field_type == 1) 
-		s = buf + sprintf(buf, "p %d %d", my_playernum, y_start);
-	else if (partial_field_type == 2) 
-		s = buf + sprintf(buf, "p %d %d", my_playernum, current_x);
-	else if (partial_field_type == 3) 
-		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
-	else if (partial_field_type == 4) 
-		s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_x);
-
+	switch (pftype) {
+		case 1:
+			s = buf + sprintf(buf, "p %d %d %d", my_playernum, current_x, current_y);
+			break;
+		case 2:
+			s = buf + sprintf(buf, "p %d %d %d", my_playernum, current_x, current_rotation);
+			break;
+		case 3:
+			s = buf + sprintf(buf, "p %d %d %d", my_playernum, current_y, current_rotation);
+			break;
+		case 4:
+			s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_x);
+			break;
+		case 5:
+			s = buf + sprintf(buf, "p %d %d %d", my_playernum, y_start, current_rotation);
+			break;
+		case 6:
+			s = buf + sprintf(buf, "p %d %d",    my_playernum, y_start);
+			break;
+		default:
+			s = buf + sprintf(buf, "p %d %d %d %d", my_playernum, current_x, current_y, current_rotation);
+			break;
+	}
+	
 	s++;
 	*s = 0;
 	sputs(buf, server_sock);
@@ -419,11 +435,16 @@ static void send_field(Field *oldfield)
 	int i, x, y, diff = 0;
 	char buf[512], *s;
 
-	if (g_round > 5  && partial_field && g_round % partial_field_rate != 0) {
-		send_partial_field(oldfield);
-		return;
+	if (partial_field && oldfield) {
+		if (g_round % partial_field_rate != 0) {
+			send_partial_field(oldfield, partial_field_type);
+			return;
+		} else {
+			send_partial_field(oldfield, -1);
+			return;
+		}
 	}
-	
+
 	if (oldfield) {
 		for (y = 0; y < FIELD_HEIGHT; y++) {
 			for (x = 0; x < FIELD_WIDTH; x++) {

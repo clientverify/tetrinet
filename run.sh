@@ -1,6 +1,12 @@
 #!/bin/bash
+#=============================================================================
+# run.sh: batch script to generate ktest files from game client and to verify
+# ktest files with nuklear
+#=============================================================================
 
-##### host specific path #####
+#=============================================================================
+# host specific path
+#=============================================================================
 if [[ $HOSTNAME == "kudzoo" ]] 
 then
   BASE_DIR="/home/rac/research/games/tetris/tetrinet"
@@ -14,35 +20,29 @@ fi
 
 if  test -z "$1" 
 then 
-  echo "usage: ./$0 [game|test|all]"
+  echo "usage: $0 [game|test|all]"
+  exit
 else
   MODE=$1 
 fi
 
-##### configuration parameters #####
+#=============================================================================
+# configuration parameters
+#=============================================================================
 SERVER_ADDRESS="localhost"
 PLAYER_NAME="p1"
 KTEST_SUFFIX="ktest"
 RECENT_LINK="last-run"
 
-maxRound=100
-
 COUNT=5
-ptypeValues=`seq 2 4`
-rateValues=`echo 1; seq 2 2 16`
 
-COUNT=2
-ptypeValues=`echo 5`
-rateValues=`seq 1 16`
-rateValues=`echo 1`
+maxRound=100
+ptypeValues=`seq 1 6`
+rateValues=`echo 1; seq 2 2 10`
 
-COUNT=2
-ptypeValues=`seq 1 4`
-ptypeValues=`echo 3`
-rateValues=`seq 1 16`
-
-
-##### game client and server paths #####
+#=============================================================================
+# game client and server paths
+#=============================================================================
 SERVER_BIN="tetrinet-server"
 SERVER_OPT=" "
 SERVER_COMMAND="$BASE_DIR/$SERVER_BIN $SERVER_OPT "
@@ -51,13 +51,21 @@ CLIENT_BIN="tetrinet-ktest"
 CLIENT_OPT=" "
 CLIENT_COMMAND="$BASE_DIR/$CLIENT_BIN $CLIENT_OPT "
 
-##### output paths #####
+#=============================================================================
+# output paths
+#=============================================================================
 DATA_DIR=$BASE_DIR/"data_tetrinet"
 RESULTS_DIR=$BASE_DIR/"results_tetrinet"
 
-KTEST_DIR="$DATA_DIR/last-run/ktest"
+RUN_PREFIX=$(date +%F.%T)
+LOG_DIR=$DATA_DIR/$RUN_PREFIX/log
+KTEST_DIR=$DATA_DIR/$RUN_PREFIX/ktest
+OUT_DIR=$RESULTS_DIR/$RUN_PREFIX
 
-##### script path #####
+
+#=============================================================================
+# script path
+#=============================================================================
 SCRIPTS_ROOT=$BASE_DIR
 SCRIPT=$SCRIPTS_ROOT"/run-nuklear.sh "
 TMP_SCRIPT="/tmp/$RANDOM.sh"
@@ -65,25 +73,22 @@ cp $SCRIPT $TMP_SCRIPT
 chmod +x $TMP_SCRIPT
 SCRIPT=$TMP_SCRIPT
 
-
-##### unique prefix #####
-PREFIX=$(date +%F.%T)
-
-##### generate ktest files #####
-if [ "$MODE" == "game" || "$MODE" == "all" ]
+#=============================================================================
+# generate ktest files from game client
+#=============================================================================
+if [[ $MODE == "game" || $MODE == "all" ]]
 then
+  echo "running game client"
 
-  LOG_DIR=$DATA_DIR/$RUN_PREFIX/log
-  KTEST_DIR=$DATA_DIR/$RUN_PREFIX/ktest
   mkdir -p $LOG_DIR $KTEST_DIR 
 
   rm $DATA_DIR/$RECENT_LINK
   ln -sf $DATA_DIR/$RUN_PREFIX $DATA_DIR/$RECENT_LINK
 
-  for rate in $rateValues
-  do 
-    for ptype in $ptypeValues
-    do
+  for ptype in $ptypeValues
+  do
+    for rate in $rateValues
+    do 
       for i in `seq 1 $COUNT`
       do
         zpad_ptype=`printf "%02d" $ptype`
@@ -118,19 +123,30 @@ then
       done
     done
   done
+else
+  echo "not running game client"
 fi
 
-if [ "$MODE" == "test" || "$MODE" == "all" ]
+#=============================================================================
+# verify ktest files
+#=============================================================================
+if [[ $MODE == "test" || $MODE == "all" ]]
 then
-  OUT_DIR=$RESULTS_DIR/$RUN_PREFIX
+  echo "running test"
+
+  if [[ $MODE != "all" ]] ; then
+    KTEST_DIR=$DATA_DIR/$RECENT_LINK/ktest
+  fi
+
   mkdir -p $OUT_DIR
+
   rm $RESULTS_DIR/$RECENT_LINK
   ln -sf $OUT_DIR $RESULTS_DIR/$RECENT_LINK
 
-  for rate in $rateValues
-  do 
-    for ptype in $ptypeValues
-    do
+  for ptype in $ptypeValues
+  do
+    for rate in $rateValues
+    do 
       for i in `seq 1 $COUNT`
       do
         zpad_ptype=`printf "%02d" $ptype`
@@ -151,5 +167,10 @@ then
       wait
     done
   done
+else
+  echo "not running test"
 fi
+#=============================================================================
+#=============================================================================
+
 

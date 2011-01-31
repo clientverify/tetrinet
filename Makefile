@@ -39,8 +39,8 @@ ifdef NO_BRUTE_FORCE_DECRYPTION
 endif
 ifdef KLEE 
 	CC = llvm-gcc
-	LD = $(GSECROOT)/local/llvm-2.7/bin/llvm-ld
-	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm -g
+	LD = $(GSECROOT)/local/llvm-2.7/bin/llvm-ld -strip-debug
+	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm 
 	LDFLAGS = 
 	SERVER_CFLAGS =
 endif

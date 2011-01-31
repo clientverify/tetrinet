@@ -29,7 +29,7 @@ int fancy = 0;		/* Fancy TTY graphics? */
 int log = 0;		/* Log network traffic to file? */
 char *logname;		/* Log filename */
 int windows_mode = 0;	/* Try to be just like the Windows version? */
-int noslide = 0;	/* Disallow piece sliding? */
+int noslide = 1;	/* Disallow piece sliding? */
 int tetrifast = 0;	/* TetriFast mode? */
 int cast_shadow = 1;	/* Make pieces cast shadow? */
 int my_playernum = -1;	/* What player number are we? */
@@ -49,7 +49,7 @@ int partial_field = 0;
 int partial_field_rate = 5;
 int partial_field_type = 1;
 int random_seed = -1;
-int max_round = -1;
+int max_round = 0;
 int autostart = 0;
 char *ktest_filename = "tetrinet.ktest";
 
@@ -882,7 +882,7 @@ int main(int ac, char **av)
 			tetris_timeout_action();
 		} else if (i == 12) {  /* Ctrl-L */
 			io->screen_redraw();
-		} else if (i == K_F10 || g_round == max_round) {
+		} else if (i == K_F10 || (max_round && g_round >= max_round)) {
 			break;  /* out of main loop */
 		} else if (i == K_F1) {
 			if (dispmode != MODE_FIELDS) {
