@@ -50,6 +50,8 @@ fi
 if  test -z "$5" 
 then
 	BCOPTIONS=" -autostart p1 localhost "
+	BCOPTIONS=" -autostart -partialtype 2 -partialrate 1 p1 localhost "
+	BCOPTIONS=" -autostart -partialtype 3 -partialrate 2 p1 localhost "
 else
 	BCOPTIONS=$5
 fi
@@ -124,7 +126,8 @@ KLEECOMMAND+=" -nuklear-prune-hack=true "
 
 KLEECOMMAND+=" -nuklear-merge-digest "
 
-KLEECOMMAND+=" -max-rounds 2000 "
+#KLEECOMMAND+=" -max-rounds 2000 "
+#KLEECOMMAND+=" -max-rounds 40 "
 #KLEECOMMAND+=" -queue-size 4 "
 
 #KLEECOMMAND+=" -nuklear-xpilot-mode "

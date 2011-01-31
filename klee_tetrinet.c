@@ -116,7 +116,7 @@ void klee_create_inputs() {
 	
 		if (current_piece == 1) {
 			rotations = 0;
-			if (shift_type == 0) {
+			if (shift_type == KLEE_LEFT) {
 				KLEE_MOD(shifts, 6);
 			} else {
 				KLEE_MOD(shifts, 4);
@@ -125,14 +125,14 @@ void klee_create_inputs() {
 
 		if (current_piece == 0) {
 			KLEE_MOD(rotations, 1);
-			if (shift_type == 0) {
+			if (shift_type == KLEE_LEFT) {
 				if (rotations == 0) {
 					KLEE_MOD(shifts, 4);
 				} else {
 					KLEE_MOD(shifts, 6);
 				}
 			} else {
-				if (rotations == 0) {
+				if (rotations == KLEE_LEFT) {
 					KLEE_MOD(shifts, 4);
 				} else {
 					KLEE_MOD(shifts, 5);
@@ -155,7 +155,7 @@ void klee_create_inputs() {
 	
 		if (current_piece == 2 || current_piece == 3 || current_piece == 6) {
 			KLEE_MOD(rotations, 3);
-			if (shift_type == 0) {
+			if (shift_type == KLEE_LEFT) {
 				if (rotations == 3) {
 					KLEE_MOD(shifts, 6);
 			  } else {

@@ -2,10 +2,10 @@
 
 if [[ $HOSTNAME == "kudzoo" ]] 
 then
-  GAME_ROOT="/home/rac/research/games/tetris/tetrinet"
+  BASE_DIR="/home/rac/research/games/tetris/tetrinet"
 elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
 then
-  GAME_ROOT="/playpen2/rac/games/tetrinet"
+  BASE_DIR="/playpen2/rac/games/tetrinet"
 else
   echo "Set correct configuration dirs in $0"
   exit
@@ -13,42 +13,52 @@ fi
 
 SERVER_BIN="tetrinet-server"
 SERVER_OPT=" "
-SERVER_COMMAND="$GAME_ROOT/$SERVER_BIN $SERVER_OPT "
+SERVER_COMMAND="$BASE_DIR/$SERVER_BIN $SERVER_OPT "
 
 CLIENT_BIN="tetrinet-ktest"
 CLIENT_OPT=" "
-CLIENT_COMMAND="$GAME_ROOT/$CLIENT_BIN $CLIENT_OPT "
+CLIENT_COMMAND="$BASE_DIR/$CLIENT_BIN $CLIENT_OPT "
 
 ###### CONFIG ######
 SERVER_ADDRESS="localhost"
 PLAYER_NAME="p1"
+KTEST_SUFFIX="ktest"
+maxRound=100
 
-MAX_ROUND=1000
-MAX_ROUND=100
-MAX_PARTIAL_FIELD_TYPE=4
-COUNT=16
+COUNT=5
+ptypeValues=`seq 2 4`
+rateValues=`echo 1; seq 2 2 16`
 
-minR=2
-maxR=16
-stepR=2
+COUNT=2
+ptypeValues=`echo 5`
+rateValues=`seq 1 16`
+rateValues=`echo 1`
+
+COUNT=2
+ptypeValues=`seq 1 4`
+ptypeValues=`echo 3`
+rateValues=`seq 1 16`
+
 ####################
 
-ROOT_DIR="$GAME_ROOT/data_tetrinet"
+DATA_DIR="$BASE_DIR/data_tetrinet"
 
 RUN_PREFIX=$(date +%F.%T)
 
-mkdir -p $ROOT_DIR/$RUN_PREFIX 
+mkdir -p $DATA_DIR/$RUN_PREFIX 
 
-rm $ROOT_DIR/"last-run"
-ln -sf $ROOT_DIR/$RUN_PREFIX $ROOT_DIR/"last-run"
+#rm $DATA_DIR/"last-run"
+#ln -sf $DATA_DIR/$RUN_PREFIX $DATA_DIR/"last-run"
+rm $DATA_DIR/"last-run-new"
+ln -sf $DATA_DIR/$RUN_PREFIX $DATA_DIR/"last-run-new"
 
-if  test -z "$1" 
-then 
-  COUNT=5
-else
-  COUNT=$2
-fi
-
+#if  test -z "$1" 
+#then 
+#  COUNT=5
+#else
+#  COUNT=$2
+#fi
+#
 if  test -z "$2" 
 then 
   MODE="ktest"
@@ -67,14 +77,14 @@ fi
 
 if [ "$MODE" == "ktest" ]
 then
-  LOG_DIR=$ROOT_DIR/$RUN_PREFIX/log
-  KTEST_DIR=$ROOT_DIR/$RUN_PREFIX/ktest
+  LOG_DIR=$DATA_DIR/$RUN_PREFIX/log
+  KTEST_DIR=$DATA_DIR/$RUN_PREFIX/ktest
 
   mkdir -p $LOG_DIR $KTEST_DIR 
 
-  for rate in `echo 1; seq $minR $stepR $maxR`
+	for rate in $rateValues
   do 
-    for ptype in `seq 1 $MAX_PARTIAL_FIELD_TYPE`
+		for ptype in $ptypeValues
     do
       for i in `seq 1 $COUNT`
       do
@@ -95,7 +105,7 @@ then
 
           echo "creating $DESC.ktest"
           OPTS=" -log $LOG_DIR/$DESC.log -ktest $KTEST_DIR/$DESC.ktest "
-          OPTS+=" -autostart -random -seed $i -maxround $MAX_ROUND -partialtype $ptype -partialrate $rate"
+          OPTS+=" -autostart -random -seed $i -maxround $maxRound -partialtype $ptype -partialrate $rate"
           OPTS+=" $PLAYER_NAME $SERVER_ADDRESS "
           echo "$CLIENT_COMMAND $OPTS"
           $CLIENT_COMMAND $OPTS
