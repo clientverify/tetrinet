@@ -51,7 +51,7 @@ if  test -z "$5"
 then
 	BCOPTIONS=" -autostart p1 localhost "
 	BCOPTIONS=" -autostart -partialtype 2 -partialrate 1 p1 localhost "
-	BCOPTIONS=" -autostart -partialtype 3 -partialrate 2 p1 localhost "
+	BCOPTIONS=" -autostart -partialtype 3 -partialrate 4 p1 localhost "
 else
 	BCOPTIONS=$5
 fi
@@ -80,6 +80,8 @@ fi
 if [ "$DEBUG" == "release" ]
 then
   BINDIR=$KLEE_DIR"/Release/bin"
+  #BINDIR=$KLEE_DIR"/Release+Profile/bin"
+  #BINDIR=$KLEE_DIR"/Release+Profile+Coverage/bin"
   KLEECOMMAND="time $BINDIR/nuklear --run-in=$KLEEOUT/run-dir/ --output-dir=$KLEEOUT/output/$RUNPREFIX.output "
 else
   BINDIR=$KLEE_DIR"/Debug/bin"
@@ -92,6 +94,7 @@ fi
 KLEECOMMAND+=" -only-error-output "
 #KLEECOMMAND+=" -all-external-warnings "
 KLEECOMMAND+=" -no-output "
+KLEECOMMAND+=" -output-istats=0 -output-stats=0 "
 KLEECOMMAND+=" -check-div-zero=0 -posix-runtime -emit-all-errors "
 #KLEECOMMAND+=" -use-cex-cache=0 -use-fast-cex-solver=0 "
 #KLEECOMMAND+=" -libc=uclibc "
@@ -128,6 +131,7 @@ KLEECOMMAND+=" -nuklear-merge-digest "
 
 #KLEECOMMAND+=" -max-rounds 2000 "
 #KLEECOMMAND+=" -max-rounds 40 "
+#KLEECOMMAND+=" -max-rounds 7 "
 #KLEECOMMAND+=" -queue-size 4 "
 
 #KLEECOMMAND+=" -nuklear-xpilot-mode "
@@ -148,8 +152,8 @@ KLEECOMMAND+=" $BCFILE $BCOPTIONS "
 
 if [ "$DEBUG" == "release" ]
 then
-  #KLEECOMMAND+=" 2>&1 | tee $KLEEOUT/log/$RUNPREFIX.log " 
-  KLEECOMMAND+=" &> $KLEEOUT/log/$RUNPREFIX.log " 
+  KLEECOMMAND+=" 2>&1 | tee $KLEEOUT/log/$RUNPREFIX.log " 
+  #KLEECOMMAND+=" &> $KLEEOUT/log/$RUNPREFIX.log " 
   echo "$KLEECOMMAND" > $KLEEOUT/log/$RUNPREFIX.command ; bash $KLEEOUT/log/$RUNPREFIX.command
 else
   echo "$KLEECOMMANDLOG" > $KLEEOUT/log/$RUNPREFIX.command ; echo "$KLEECOMMAND" >> $KLEEOUT/log/$RUNPREFIX.command ; gdb $BINDIR/nuklear -x $KLEEOUT/log/$RUNPREFIX.command
