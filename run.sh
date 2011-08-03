@@ -13,6 +13,9 @@ then
 elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
 then
   BASE_DIR="/playpen2/rac/games/tetrinet"
+elif [[ $HOSTNAME == "albus" ]]
+then
+  BASE_DIR="/home/rac/research/gsec/games/tetris/tetrinet"
 else
   echo "Set correct configuration dirs in $0"
   exit

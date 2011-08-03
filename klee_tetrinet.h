@@ -15,7 +15,8 @@ extern int g_new_piece;
 #define IFKLEE(x) x
 #define KPRINTF(x) //klee_warning(x)
 #define KEXIT klee_silent_exit(1);
-#define MAKE_SYMBOLIC(x,y,z) klee_nuklear_make_symbolic(x,y)
+//#define MAKE_SYMBOLIC(x,y,z) klee_nuklear_make_symbolic(x,y)
+#define MAKE_SYMBOLIC(x,y,z) klee_make_symbolic(x, sizeof(unsigned), y)
 #define KLEE_MOD(x, y)  if (x > y)  klee_silent_exit(1);
 
 #define KLEE_UP K_UP

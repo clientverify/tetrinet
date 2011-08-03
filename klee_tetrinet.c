@@ -256,7 +256,8 @@ int klee_wait_for_input(int msec)
 	KPRINTF("KLEE_NUKLEAR_MAKE_SYMBOLIC");
 	
 	unsigned int ev;
-	klee_nuklear_make_symbolic(&ev, "ev");
+	//klee_nuklear_make_symbolic(&ev, "ev");
+	MAKE_SYMBOLIC(&ev, "ev", 0);
 
 	if (ev > 2)
 	  KEXIT;
@@ -279,7 +280,7 @@ int klee_wait_for_input(int msec)
 }
 
 // Merge point function
-static int nuklear_merge() { klee_warning("nuklear_merge"); return 0; }
+int nuklear_merge() { klee_warning("nuklear_merge"); return 0; }
 
 // Stub functions used by stub interface.
 void klee_void() { return; }
