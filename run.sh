@@ -40,8 +40,10 @@ RECENT_LINK="last-run"
 COUNT=5
 
 maxRound=100
-ptypeValues=`seq 1 6`
-rateValues=`echo 1; seq 2 2 10`
+#ptypeValues=`seq 1 6`
+ptypeValues=`seq 1`
+#rateValues=`echo 1; seq 2 2 10`
+rateValues=`echo 1`
 
 #=============================================================================
 # game client and server paths
