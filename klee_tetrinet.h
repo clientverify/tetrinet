@@ -9,6 +9,7 @@ void klee_init();
 extern int g_round;
 extern int g_last_round;
 extern int g_new_piece;
+enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 
 #ifdef KLEE
 

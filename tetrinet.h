@@ -76,7 +76,7 @@ typedef struct {
 /* Externs */
 
 extern int fancy;
-extern int log;
+extern int do_log;
 extern char *logname;
 extern int windows_mode;
 extern int noslide;

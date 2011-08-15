@@ -548,7 +548,7 @@ void new_piece(void)
 	piece_waiting = 0;
 
 	klee_increment_round();
-	IFKLEE(nuklear_merge());
+	//IFKLEE(nuklear_merge());
 }
 
 /*************************************************************************/

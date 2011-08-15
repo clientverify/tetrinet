@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <curses.h>
 #include "tetrinet.h"
 #include "tetris.h"
@@ -323,13 +325,13 @@ void klee_init() {
 
 ssize_t ktest_write(int fd, const void *buf, size_t count) {
   //ssize_t num_bytes = write(fd, buf, count);
-  ssize_t num_bytes = send(fd, buf, count, NULL);
+  ssize_t num_bytes = send(fd, buf, count, 0);
   return num_bytes;
 }
 
 ssize_t ktest_read(int fd, void *buf, size_t count) {
   //ssize_t num_bytes = read(fd, buf, count);
-  ssize_t num_bytes = recv(fd, buf, count, NULL);
+  ssize_t num_bytes = recv(fd, buf, count, 0);
   return num_bytes;
 }
 
@@ -346,7 +348,6 @@ void ktest_finish(int argc, char** argv) {
 KTestObject* ktest_objects = NULL;
 int num_ktest_objects = -1;
 int max_ktest_objects = 0;
-enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 //char* ktest_object_names[] = { "c2s", "s2c" }; // if recording at server
 char* ktest_object_names[] = { "s2c", "c2s" }; // if recording at client
 
@@ -366,7 +367,7 @@ ssize_t ktest_write(int fd, const void *buf, size_t count) {
   int i = ++num_ktest_objects;
 
   //ssize_t num_bytes = write(fd, buf, count);
-  ssize_t num_bytes = send(fd, buf, count, NULL);
+  ssize_t num_bytes = send(fd, buf, count, 0);
 
   if (num_bytes >= 0) {
     ktest_check_mem();
@@ -382,10 +383,9 @@ ssize_t ktest_write(int fd, const void *buf, size_t count) {
 }
 
 ssize_t ktest_read(int fd, void *buf, size_t count) {
-  int i = ++num_ktest_objects;
+	int i = ++num_ktest_objects;
 
-  //ssize_t num_bytes = read(fd, buf, count);
-  ssize_t num_bytes = recv(fd, buf, count, NULL);
+  ssize_t num_bytes = recv(fd, buf, count, 0);
 
   if (num_bytes >= 0) {
     ktest_check_mem();
