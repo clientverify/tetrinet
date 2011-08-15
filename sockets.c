@@ -24,6 +24,33 @@ static FILE *logfile;
 /*************************************************************************/
 
 static int lastchar = EOF;
+#define BUF_SZ 2048
+
+#ifdef KLEE
+// buffered version of original sgetc
+int sgetc(int s)
+{
+	static unsigned char sgetc_buf[BUF_SZ];
+	static unsigned char *ptr = NULL;
+	static int num_bytes = 0;
+
+	int c;
+	char ch;
+
+	if (num_bytes <= 0) {
+		ptr = sgetc_buf;
+		num_bytes = recv(s, sgetc_buf, BUF_SZ, 0);
+		if (num_bytes <= 0)
+			return EOF;
+	}
+
+	num_bytes--;
+	ch = *ptr++;
+	c = ch & 0xFF;
+	return c;
+}
+
+#else
 
 int sgetc(int s)
 {
@@ -35,17 +62,19 @@ int sgetc(int s)
 		lastchar = EOF;
 		return c;
 	}
-	//if (read(s, &ch, 1) != 1)
-	if (recv(s, &ch, 1, NULL) != 1)
+	if (recv(s, &ch, 1, 0) != 1)
 		return EOF;
 	c = ch & 0xFF;
 	return c;
 }
 
-int sungetc(int c, int s)
-{
-	return lastchar = c;
-}
+#endif
+
+//int sungetc(int c, int s)
+//{
+//	exit(1);
+//	return lastchar = c;
+//}
 
 /*************************************************************************/
 
@@ -68,18 +97,19 @@ char *sgets(char *buf, int len, int s)
 	if (c < 0)
 		return NULL;
 
-	ktest_copy(buf, buf_size-len, 0);
+	ktest_copy(buf, buf_size-len, CLIENT_TO_SERVER);
 
 	if (c == 0xFF)
 		ptr--;
 	*ptr = 0;
-	if (log) {
+
+	if (do_log) {
 		if (!logfile)
 			logfile = fopen(logname, "a");
 		if (logfile) {
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
-			fprintf(logfile, "[%03d][%d.%03d] <<< %s\n", g_round,
+			fprintf(logfile, "[%03d][%d.%03d][sgets] <<< %s\n", g_round,
 					(int) tv.tv_sec, (int) tv.tv_usec/1000, buf);
 			fflush(logfile);
 		}
@@ -96,7 +126,7 @@ int sputs(const char *str, int s)
 	unsigned char c = 0xFF;
 	int n = 0;
 
-	if (log) {
+	if (do_log) {
 		if (!logfile)
 			logfile = fopen(logname, "a");
 		if (logfile) {
@@ -107,13 +137,34 @@ int sputs(const char *str, int s)
 		}
 	}
 
-	if (*str != 0) {
-		n = ktest_write(s, str, strlen(str));
-		if (n <= 0)
-			return n;
+	//if (*str != 0) {
+	//	n = ktest_write(s, str, strlen(str));
+	//	if (n <= 0)
+	//		return n;
+	//}
+	//if (ktest_write(s, &c, 1) <= 0)
+	//	return n;
+	//return n+1;
+
+	static char str_buf[16384];
+
+	int str_len = 0;
+
+	if (*str != 0) 
+		str_len = strlen(str);
+	
+	
+	unsigned i=0;
+	for (; i<str_len; ++i) {
+		str_buf[i] = str[i];
 	}
-	if (ktest_write(s, &c, 1) <= 0)
+	str_buf[i] = 0xFF;
+
+	n = ktest_write(s, str_buf, str_len+1);
+
+	if (n <= 0)
 		return n;
+
 	return n+1;
 }
 
