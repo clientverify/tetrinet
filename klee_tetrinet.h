@@ -24,6 +24,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_DOWN K_DOWN
 #define KLEE_LEFT K_LEFT
 #define KLEE_RIGHT K_RIGHT
+#define KLEE_QUITKEY ('0'|0x80)
 
 #else
 
@@ -42,6 +43,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_DOWN KEY_DOWN
 #define KLEE_LEFT KEY_LEFT
 #define KLEE_RIGHT KEY_RIGHT
+#define KLEE_QUITKEY ('0'|0x80)
 
 
 

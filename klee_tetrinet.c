@@ -12,6 +12,7 @@
 
 #include "klee_tetrinet.h"
 #include "KTest.h"
+#include <assert.h>
 
 #define KTEST_FILE "tetrinet.ktest"
 static FILE *klee_logfile = NULL;
@@ -45,8 +46,6 @@ int nuklear_random() {
 }
 
 int klee_set_random_var(unsigned int *var, unsigned int max) {
-	//if (max == 0) return 0;
-	//*var = rand() % (max + 1);
 	*var = rand();
 }
 
@@ -76,163 +75,159 @@ void klee_write_log(char* buf) {
 	}
 }
 
-void klee_create_inputs() {
-	unsigned int i=0, rotations, do_quit, shifts, shift_type,do_invalid;
+//    Piece Types: 
+//    0    1    2    3    4    5    6
+//    ##X# .... .... .... .... .... ....
+//    .... .X#. #X#. #X#. #X.. .X#. #X#.
+//    .... .##. ..#. #... .##. ##.. .#..
+//    .... .... .... .... .... .... ....
+//    Rotational Positions:
+//    2    1    4    4    2    2    4
+//   
+//    Max Moves Left in each Rotation
+// 1  4    6    5    5    5    5    5   
+// 2  6    .    5    5    5    5    5  
+// 3  .    .    5    5    .    .    5  
+// 4  .    .    6    6    .    .    6    
+//
+//    Max Moves Right in each Rotation
+// 1  4    4    4    4    4    4    4    
+// 2  5    .    5    5    5    5    5   
+// 3  .    .    4    4    .    .    4   
+// 4  .    .    4    4    .    .    4     
 
-	MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
+typedef struct {
+	int s; // shifts
+	int s_type; // shift_type
+	int rot;
+	int max_rot;
+	int max_mov[2][4];
+} input_data_t;
+
+input_data_t input_data[7] = {
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,6,0,0} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={5,0,0,0} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} } 
+};
+
+void klee_enumerate_single_inputs() {
+	int i=0, input_index=0;
+
+	input_data_t *cdata = &(input_data[current_piece]);
+
+	if (cdata->rot >= cdata->max_rot) {
+		//advance piece or quit or reset
+		cdata->s = cdata->s_type = cdata->rot = 0;
+		//exit(1);
+	}
+
+	for (i=cdata->rot; i>0; i--) {
+		inputs[input_index++] = KLEE_UP;
+	}
+
+	for (i=cdata->s; i>0; i--) {
+		inputs[input_index++] = cdata->s_type ? KLEE_RIGHT : KLEE_LEFT;
+	}
+
+	inputs[input_index++] = ' ';
+	inputs[input_index++] = KLEE_QUITKEY;
+	inputs[input_index++] = 0xDEADBEEF;
+
+	cdata->s++;
+
+	if (cdata->s > cdata->max_mov[cdata->s_type][cdata->rot]) {
+		if (cdata->s_type == 1) {
+			cdata->rot++;
+		} 
+		cdata->s_type ^= 1;
+		cdata->s = 0;
+		if (cdata->s_type == 1) {
+			cdata->s++;
+		}
+	}
+}
+
+void klee_random_inputs() {
+	unsigned int i=0, input_index=0;
+	unsigned int rotations, do_quit, shifts, shift_type, do_invalid;
+
+	//MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
 	MAKE_SYMBOLIC(&do_invalid, "do_invalid", 1);
 	MAKE_SYMBOLIC(&shifts,  "shifts", 5);
 	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
 	MAKE_SYMBOLIC(&rotations,"rotations", 2);
 
-	if (do_quit == 1) {
-		inputs[i++] = K_F10;
-	} else {
+	input_data_t *cdata = &(input_data[current_piece]);
 
-		KLEE_MOD(shift_type, 1);
-		if (shift_type == 0)
-			shift_type = KLEE_LEFT;
-		else
-			shift_type = KLEE_RIGHT;
 
-		//    Piece Types: 
-		//    0    1    2    3    4    5    6
-		//    ##X# .... .... .... .... .... ....
-		//    .... .X#. #X#. #X#. #X.. .X#. #X#.
-		//    .... .##. ..#. #... .##. ##.. .#..
-		//    .... .... .... .... .... .... ....
-		//    Rotational Positions:
-		//    2    1    4    4    2    2    4
-		//   
-		//    Max Moves Left in each Rotation
-		// 1  4    6    5    5    5    5    5   
-		// 2  6    .    5    5    5    5    5  
-		// 3  .    .    5    5    .    .    5  
-		// 4  .    .    6    6    .    .    6    
-		//
-		//    Max Moves Right in each Rotation
-		// 1  4    4    4    4    4    4    4    
-		// 2  5    .    5    5    5    5    5   
-		// 3  .    .    4    4    .    .    4   
-		// 4  .    .    4    4    .    .    4     
-	
-		if (current_piece == 1) {
-			rotations = 0;
-			if (shift_type == KLEE_LEFT) {
-				KLEE_MOD(shifts, 6);
-			} else {
-				KLEE_MOD(shifts, 4);
-			}
-		}
+	KLEE_MOD(shift_type, 1);
+	KLEE_MOD(rotations, cdata->max_rot-1);
 
-		if (current_piece == 0) {
-			KLEE_MOD(rotations, 1);
-			if (shift_type == KLEE_LEFT) {
-				if (rotations == 0) {
-					KLEE_MOD(shifts, 4);
-				} else {
-					KLEE_MOD(shifts, 6);
-				}
-			} else {
-				if (rotations == KLEE_LEFT) {
-					KLEE_MOD(shifts, 4);
-				} else {
-					KLEE_MOD(shifts, 5);
-				}
-			}
-		}
-	
-		if (current_piece == 4 || current_piece == 5) {
-			KLEE_MOD(rotations, 1);
-			if (shift_type == 0) {
-				KLEE_MOD(shifts, 5);
-			} else {
-				if (rotations == 0) {
-					KLEE_MOD(shifts, 4);
-				} else {
-					KLEE_MOD(shifts, 5);
-				}
-			}
-		}
-	
-		if (current_piece == 2 || current_piece == 3 || current_piece == 6) {
-			KLEE_MOD(rotations, 3);
-			if (shift_type == KLEE_LEFT) {
-				if (rotations == 3) {
-					KLEE_MOD(shifts, 6);
-			  } else {
-					KLEE_MOD(shifts, 5);
-				}
-			} else {
-				if (rotations == 1) {
-					KLEE_MOD(shifts, 5);
-				} else {
-					KLEE_MOD(shifts, 4);
-				}
-			}
-		}
-
-		switch (rotations) {
-			case 3:
-				inputs[i++] = KLEE_UP;
-			case 2:
-				inputs[i++] = KLEE_UP;
-			case 1:
-				inputs[i++] = KLEE_UP;
-			default:
-				break;
-		}
-
-		switch (shifts) {
-			case 6:
-				inputs[i++] = shift_type;
-			case 5:
-				inputs[i++] = shift_type;
-			case 4:
-				inputs[i++] = shift_type;
-			case 3:
-				inputs[i++] = shift_type;
-			case 2:
-				inputs[i++] = shift_type;
-			case 1:
-				inputs[i++] = shift_type;
-			default:
-				break;
-		}
-
-		if (do_invalid)
-			inputs[i++] = K_INVALID;
-
-		inputs[i++] = ' ';
+	for (i=rotations; i>0; i--) {
+		inputs[input_index++] = KLEE_UP;
 	}
-	inputs[i++] = 0xDEADBEEF;
-	//inputs[i++] = K_INVALID;
+
+	unsigned int max_shift = cdata->max_mov[shift_type][rotations];
+
+	// If we are shifting left, don't ever have a shift distance of 0
+	if (shift_type) {
+		max_shift--;
+		inputs[input_index++] = KLEE_RIGHT;
+	}
+
+	KLEE_MOD(shifts, max_shift);
+
+	for (i=shifts; i>0; i--) {
+		inputs[input_index++] = shift_type ? KLEE_RIGHT : KLEE_LEFT;
+	}
+
+	inputs[input_index++] = KLEE_DOWN;
+	inputs[input_index++] = ' ';
+
+	//inputs[input_index++] = KLEE_QUITKEY;
+	inputs[input_index++] = 0xDEADBEEF;
+
+}
+
+void print_inputs() {
+	// Print generated inputs
+	char buf[512];
+	char* bufp = buf;
+	int i=0;
 	
-	//// Print generated inputs
-	//char buf[512];
-	//char* bufp = buf;
-	//int j = 0;
-	//
-	//bufp = bufp + sprintf(bufp, "Round %d input sequence : ", g_round);
-	//for (j = 0; j<i; j++) {
-	//	char *input_str = klee_get_input_str(inputs[j]);
-	//	bufp = bufp + sprintf(bufp, "%s, ", input_str);
-	//}
-	//KPRINTF(buf);
+	bufp = bufp + sprintf(bufp, "Round %d input sequence : ", g_round);
+
+	while (inputs[i] != 0xDEADBEEF) {
+		char *input_str = klee_get_input_str(inputs[i]);
+		bufp = bufp + sprintf(bufp, "%s, ", input_str);
+		i++;
+	}
+	KPRINTF(buf);
+}
+
+void klee_create_inputs() {
+	switch (input_generation_type) {
+#ifndef KLEE
+		case 1:
+			klee_enumerate_single_inputs();
+			return;
+#endif
+		case 0:
+		default:
+			klee_random_inputs();
+			return;
+	}
 }
 
 int klee_getch() {
+	int retval;
 	if (input_index == 0) {
 		klee_create_inputs();
 	}
-
-	int retval = inputs[input_index++];
-
-	//// Print input
-	//char buf[64];
-	//sprintf(buf, "Round: %d Input[%d] = %s(%x)", 
-	//	g_round, input_index-1, klee_get_input_str(retval), retval);
-	//KPRINTF(buf);
 
 	if (inputs[input_index] == 0xDEADBEEF) {
 		KPRINTF("last user input event");
@@ -240,7 +235,16 @@ int klee_getch() {
 		g_new_piece = 0;
 		input_index = 0;
 		memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
+		retval = KLEE_DOWN;
+	} else {
+		retval = inputs[input_index++];
 	}
+
+	//// Print input
+	//char buf[64];
+	//sprintf(buf, "Round: %d Input[%d] = %s(%x)", 
+	//	g_round, input_index-1, klee_get_input_str(retval), retval);
+	//KPRINTF(buf);
 	return retval;
 }
 
