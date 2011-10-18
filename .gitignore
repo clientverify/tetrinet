@@ -3,3 +3,4 @@
 *.swo
 *.swp
 /nuklear-results-tetrinet/*
+*data_tetrinet*
