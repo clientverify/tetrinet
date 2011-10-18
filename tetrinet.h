@@ -98,6 +98,7 @@ extern int random_input;
 extern int partial_field;
 extern int partial_field_rate;
 extern int partial_field_type;
+extern int input_generation_type;
 extern int random_seed;
 extern char *ktest_filename;
 

@@ -59,6 +59,7 @@ extern void init_shapes(void);
 extern int get_shape(int piece, int rotation, char buf[4][4]);
 
 extern void new_game(void);
+extern void lose_game(void);
 
 extern void new_piece(void);
 extern void step_down(void);

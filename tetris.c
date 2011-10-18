@@ -553,6 +553,18 @@ void new_piece(void)
 
 /*************************************************************************/
 
+void lose_game(void)
+{
+	usleep(50000);
+	//sleep(1);
+	send_field(NULL);
+	sockprintf(server_sock, "playerlost %d", my_playernum);
+	playing_game = 0;
+	not_playing_game = 1;
+}
+
+/*************************************************************************/
+
 /* Step the current piece down one space.  If it's already as far as it can
  * go, solidify it, check for completed lines, send the new field state,
  * and start a new piece.

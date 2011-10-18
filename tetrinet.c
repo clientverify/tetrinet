@@ -48,6 +48,7 @@ int random_input = 0;
 int partial_field = 0;
 int partial_field_rate = 5;
 int partial_field_type = 1;
+int input_generation_type = 0;
 int random_seed = -1;
 int max_round = 0;
 int autostart = 0;
@@ -749,6 +750,13 @@ int init(int ac, char **av)
 						return 1;
 					}
 					partial_field_rate = atoi(av[i]);
+				} else if (strcmp(av[i], "-inputgenerationtype") == 0) {
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -inputgenerationtype requires an argument\n");
+						return 1;
+					}
+					input_generation_type = atoi(av[i]);
 				} else if (strcmp(av[i], "-seed") == 0) {
 					i++;
 					if (i >= ac) {
@@ -884,7 +892,8 @@ int main(int ac, char **av)
 		} else if (i == 12) {  /* Ctrl-L */
 			io->screen_redraw();
 		} else if (i == K_F10 || (max_round && g_round >= max_round)) {
-			break;  /* out of main loop */
+			lose_game();
+			//break;  /* out of main loop */
 		} else if (i == K_F1) {
 			if (dispmode != MODE_FIELDS) {
 				dispmode = MODE_FIELDS;
