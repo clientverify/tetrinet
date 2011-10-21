@@ -891,9 +891,10 @@ int main(int ac, char **av)
 			tetris_timeout_action();
 		} else if (i == 12) {  /* Ctrl-L */
 			io->screen_redraw();
-		} else if (i == K_F10 || (max_round && g_round >= max_round)) {
+		} else if (i == K_F9) {
 			lose_game();
-			//break;  /* out of main loop */
+		} else if (i == K_F10 || (max_round && g_round >= max_round)) {
+			break;  /* out of main loop */
 		} else if (i == K_F1) {
 			if (dispmode != MODE_FIELDS) {
 				dispmode = MODE_FIELDS;

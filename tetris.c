@@ -496,6 +496,21 @@ static void send_field(Field *oldfield)
 }
 
 /*************************************************************************/
+
+static void set_next_piece(void) {
+
+	int n;
+	next_piece = klee_new_piece();
+	if (next_piece == -1) {
+		n = nuklear_rand() % 100;
+		next_piece = 0;
+		while (n >= piecefreq[next_piece] && next_piece < 6) {
+			n -= piecefreq[next_piece];
+			next_piece++;
+		}
+	}
+}
+
 /*************************************************************************/
 
 /* Generate a new piece and set up the timer. */
@@ -505,15 +520,10 @@ void new_piece(void)
 	int n;
 	PieceData *pd;
 
-	klee_new_piece();
-
 	current_piece = next_piece;
-	n = nuklear_rand() % 100;
-	next_piece = 0;
-	while (n >= piecefreq[next_piece] && next_piece < 6) {
-		n -= piecefreq[next_piece];
-		next_piece++;
-	}
+
+	set_next_piece();
+
 	current_rotation = 0;
 	pd = &piecedata[current_piece][current_rotation];
 	current_x = 6;
@@ -555,7 +565,7 @@ void new_piece(void)
 
 void lose_game(void)
 {
-	usleep(50000);
+	//usleep(50000);
 	//sleep(1);
 	send_field(NULL);
 	sockprintf(server_sock, "playerlost %d", my_playernum);
@@ -906,12 +916,7 @@ void new_game(void)
 	timeout.tv_usec %= 1000000;
 #endif
 	piece_waiting = 1;
-	n = nuklear_rand() % 100;
-	next_piece = 0;
-	while (n >= piecefreq[next_piece] && next_piece < 6) {
-		n -= piecefreq[next_piece];
-		next_piece++;
-	}
+	set_next_piece();
 }
 
 /*************************************************************************/

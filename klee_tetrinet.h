@@ -24,7 +24,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_DOWN K_DOWN
 #define KLEE_LEFT K_LEFT
 #define KLEE_RIGHT K_RIGHT
-#define KLEE_QUITKEY ('0'|0x80)
+#define KLEE_QUITKEY ('9'|0x80)
 
 #else
 
@@ -32,7 +32,6 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KEXIT 
 
 #define MAKE_SYMBOLIC(x,y,z)  klee_set_random_var(x,z)
-//#define MAKE_SYMBOLIC(x,y,z)
 
 #define KLEE_MOD(x, y) x = x % (y + 1);
 
@@ -43,14 +42,9 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_DOWN KEY_DOWN
 #define KLEE_LEFT KEY_LEFT
 #define KLEE_RIGHT KEY_RIGHT
-#define KLEE_QUITKEY ('0'|0x80)
-
-
-
+#define KLEE_QUITKEY ('9'|0x80)
 
 #endif
-
-
 
 #endif //KLEE_TETRINET_H
 

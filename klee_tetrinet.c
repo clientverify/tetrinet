@@ -22,13 +22,22 @@ int g_round = 0;
 int g_last_round = 0;
 int g_new_piece = 0;
 
+static int current_enumerate_piece = 0;
+
 #define INPUTS_LENGTH 32
 unsigned int inputs[INPUTS_LENGTH];
 int input_index = 0;
 char* input_strings[6] = {"UP", "LF", "RT", "SP", "QT", "INVALID"};
 
 void klee_increment_round() { g_round++; }
-void klee_new_piece() { g_new_piece = 1; }
+int klee_new_piece() { 
+	g_new_piece = 1;
+
+	if (input_generation_type == 1) {
+		return current_enumerate_piece;
+	}
+	return -1;
+}
 
 int nuklear_rand() {
 	static long a = 100001;
@@ -105,8 +114,8 @@ typedef struct {
 } input_data_t;
 
 input_data_t input_data[7] = {
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,6,0,0} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={5,0,0,0} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,5,0,0} },
+{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={4,0,0,0} },
 { .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} },
 { .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} },
 { .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0} },
@@ -118,12 +127,6 @@ void klee_enumerate_single_inputs() {
 	int i=0, input_index=0;
 
 	input_data_t *cdata = &(input_data[current_piece]);
-
-	if (cdata->rot >= cdata->max_rot) {
-		//advance piece or quit or reset
-		cdata->s = cdata->s_type = cdata->rot = 0;
-		//exit(1);
-	}
 
 	for (i=cdata->rot; i>0; i--) {
 		inputs[input_index++] = KLEE_UP;
@@ -149,6 +152,18 @@ void klee_enumerate_single_inputs() {
 			cdata->s++;
 		}
 	}
+
+	if (cdata->rot >= cdata->max_rot) {
+		//advance next piece 
+		if (current_enumerate_piece >= 6) {
+			inputs[0] = ('0'|0x80);
+			inputs[1] = 0xDEADBEEF;
+		}
+		current_enumerate_piece = (current_enumerate_piece + 1 ) % 7;
+		// reset piece data
+		cdata->s = cdata->s_type = cdata->rot = 0;
+	}
+
 }
 
 void klee_random_inputs() {
