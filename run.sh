@@ -9,7 +9,7 @@
 #=============================================================================
 if [[ $HOSTNAME == "kudzoo" ]] 
 then
-  BASE_DIR="/home/rac/research/games/tetris/tetrinet"
+  BASE_DIR="/home/rac/research/gsec/games/tetrinet"
 elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
 then
   BASE_DIR="/playpen1/rac/gsec/games/tetrinet"
