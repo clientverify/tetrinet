@@ -12,7 +12,7 @@ then
   BASE_DIR="/home/rac/research/gsec/games/tetrinet"
 elif [[ $HOSTNAME == "brawn.cs.unc.edu" ]]
 then
-  BASE_DIR="/playpen2/rac/games/tetrinet"
+  BASE_DIR="/playpen1/rac/gsec/games/tetrinet"
 elif [[ $HOSTNAME == "albus" ]]
 then
   BASE_DIR="/home/rac/research/gsec/games/tetris/tetrinet"
