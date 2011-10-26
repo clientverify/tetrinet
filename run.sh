@@ -79,6 +79,67 @@ chmod +x $TMP_SCRIPT
 SCRIPT=$TMP_SCRIPT
 
 #=============================================================================
+# enumerate all possible input moves with no simulated losses
+#=============================================================================
+if [[ $MODE == "enumerate" ]]
+then
+  echo "enumerating all possible input moves with no simulated losses"
+
+  mkdir -p $LOG_DIR $KTEST_DIR 
+
+  rm $DATA_DIR/$RECENT_LINK
+  ln -sf $DATA_DIR/$RUN_PREFIX $DATA_DIR/$RECENT_LINK
+
+  ptypeValues=`seq 0 0`
+  rateValues=`echo 1`
+  COUNT=20
+
+
+  for ptype in $ptypeValues
+  do
+    for rate in $rateValues
+    do 
+      for i in `seq 0 $COUNT`
+      do
+        zpad_ptype=`printf "%02d" $ptype`
+        zpad_rate=`printf "%02d" $rate`
+        zpad_i=`printf "%02d" $i`
+        DESC="tetrinet_enumerate_inputs_"$zpad_i"_type-"$ptype"_rate-"$zpad_rate
+        KTEST_FILE=$KTEST_DIR/$DESC"."$KTEST_SUFFIX
+
+        while ! [ -e $KTEST_FILE ] 
+        do
+          while ! [[ `pgrep $SERVER_BIN` ]] 
+          do
+            echo "starting server in background..."
+            echo "$SERVER_COMMAND &> /dev/null &"
+            exec $SERVER_COMMAND &> /dev/null &
+            sleep 1
+          done
+
+          echo "creating $KTEST_FILE"
+          OPTS=" -inputgenerationtype 1 "
+          OPTS+=" -log $LOG_DIR/$DESC.log -ktest $KTEST_FILE "
+          OPTS+=" -random -seed $i "
+          OPTS+=" -autostart -partialtype $ptype -partialrate $rate"
+          OPTS+=" -startingheight $i "
+          OPTS+=" $PLAYER_NAME $SERVER_ADDRESS "
+
+          echo "executing $CLIENT_COMMAND $OPTS"
+          $CLIENT_COMMAND $OPTS
+
+          echo "exiting. now killing server process. "
+          pkill $SERVER_BIN
+          sleep 1
+        done
+      done
+    done
+  done
+else
+  echo "not running game client"
+fi
+
+#=============================================================================
 # generate ktest files from game client
 #=============================================================================
 if [[ $MODE == "game" || $MODE == "all" ]]
