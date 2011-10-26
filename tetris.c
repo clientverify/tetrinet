@@ -565,8 +565,7 @@ void new_piece(void)
 
 void lose_game(void)
 {
-	//usleep(50000);
-	//sleep(1);
+	if (slow_mode) usleep(50000);
 	send_field(NULL);
 	sockprintf(server_sock, "playerlost %d", my_playernum);
 	playing_game = 0;

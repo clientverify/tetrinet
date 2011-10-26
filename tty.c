@@ -64,7 +64,7 @@ static int wait_for_input(int msec)
 			msec == 0;
 		if (timeout_skip && g_round > g_last_round && g_new_piece) {
 			c = klee_getch();
-			//usleep(50000);
+			if (slow_mode) usleep(50000);
 			goto random_input_active;
 		}
 	}

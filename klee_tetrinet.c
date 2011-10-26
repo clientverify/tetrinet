@@ -162,15 +162,15 @@ void klee_enumerate_single_inputs() {
 		current_enumerate_piece = (current_enumerate_piece + 1 ) % 7;
 		// reset piece data
 		cdata->s = cdata->s_type = cdata->rot = 0;
-	}
 
+	}
 }
 
 void klee_random_inputs() {
 	unsigned int i=0, input_index=0;
 	unsigned int rotations, do_quit, shifts, shift_type, do_invalid;
 
-	//MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
+	MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
 	MAKE_SYMBOLIC(&do_invalid, "do_invalid", 1);
 	MAKE_SYMBOLIC(&shifts,  "shifts", 5);
 	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
@@ -178,34 +178,36 @@ void klee_random_inputs() {
 
 	input_data_t *cdata = &(input_data[current_piece]);
 
+	if (do_quit) { 
 
-	KLEE_MOD(shift_type, 1);
-	KLEE_MOD(rotations, cdata->max_rot-1);
+		inputs[input_index++] = KLEE_QUITKEY;
+	} else {
+		KLEE_MOD(shift_type, 1);
+		KLEE_MOD(rotations, cdata->max_rot-1);
 
-	for (i=rotations; i>0; i--) {
-		inputs[input_index++] = KLEE_UP;
+		for (i=rotations; i>0; i--) {
+			inputs[input_index++] = KLEE_UP;
+		}
+
+		unsigned int max_shift = cdata->max_mov[shift_type][rotations];
+
+		// If we are shifting left, don't ever have a shift distance of 0
+		if (shift_type) {
+			max_shift--;
+			inputs[input_index++] = KLEE_RIGHT;
+		}
+
+		KLEE_MOD(shifts, max_shift);
+
+		for (i=shifts; i>0; i--) {
+			inputs[input_index++] = shift_type ? KLEE_RIGHT : KLEE_LEFT;
+		}
+
+		inputs[input_index++] = KLEE_DOWN;
+		inputs[input_index++] = ' ';
 	}
 
-	unsigned int max_shift = cdata->max_mov[shift_type][rotations];
-
-	// If we are shifting left, don't ever have a shift distance of 0
-	if (shift_type) {
-		max_shift--;
-		inputs[input_index++] = KLEE_RIGHT;
-	}
-
-	KLEE_MOD(shifts, max_shift);
-
-	for (i=shifts; i>0; i--) {
-		inputs[input_index++] = shift_type ? KLEE_RIGHT : KLEE_LEFT;
-	}
-
-	inputs[input_index++] = KLEE_DOWN;
-	inputs[input_index++] = ' ';
-
-	//inputs[input_index++] = KLEE_QUITKEY;
 	inputs[input_index++] = 0xDEADBEEF;
-
 }
 
 void print_inputs() {
@@ -225,6 +227,17 @@ void print_inputs() {
 }
 
 void klee_create_inputs() {
+
+	// initialize game board with random tiles
+	if (starting_height > 0) {
+		Field *f = &fields[my_playernum-1];
+		int y;
+		for (y=0; y<=starting_height; y++) {
+			memset((*f)[FIELD_HEIGHT-y], 1, FIELD_WIDTH);
+			(*f)[FIELD_HEIGHT-y][nuklear_rand() % FIELD_WIDTH] = 0;
+		}
+	}
+
 	switch (input_generation_type) {
 #ifndef KLEE
 		case 1:

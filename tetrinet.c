@@ -51,6 +51,8 @@ int partial_field_type = 1;
 int input_generation_type = 0;
 int random_seed = -1;
 int max_round = 0;
+int starting_height = 0;
+int slow_mode = 0;
 int autostart = 0;
 char *ktest_filename = "tetrinet.ktest";
 
@@ -778,6 +780,15 @@ int init(int ac, char **av)
 						return 1;
 					}
 					ktest_filename = av[i];
+				} else if (strcmp(av[i], "-startingheight") == 0) {
+					i++;
+					if (i >= ac) {
+						fprintf(stderr, "Option -startingheight requires an argument\n");
+						return 1;
+					}
+					starting_height = atoi(av[i]);
+				} else if (strcmp(av[i], "-slowmode") == 0) {
+					slow_mode = 1;
 				} else {
 					fprintf(stderr, "Unknown option %s\n", av[i]);
 					help();

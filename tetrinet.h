@@ -102,6 +102,9 @@ extern int input_generation_type;
 extern int random_seed;
 extern char *ktest_filename;
 
+extern int slow_mode;
+extern int starting_height;
+
 extern Interface *io;
 
 /*************************************************************************/
