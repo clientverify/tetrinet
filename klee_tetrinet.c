@@ -24,10 +24,10 @@ int g_new_piece = 0;
 
 static int current_enumerate_piece = 0;
 
-#define INPUTS_LENGTH 32
+#define INPUTS_LENGTH 16
 unsigned int inputs[INPUTS_LENGTH];
 int input_index = 0;
-char* input_strings[6] = {"UP", "LF", "RT", "SP", "QT", "INVALID"};
+char* input_strings[] = {"UP", "DN", "LF", "RT", "SP", "QT", "INVALID"};
 
 void klee_increment_round() { g_round++; }
 int klee_new_piece() { 
@@ -59,17 +59,35 @@ int klee_set_random_var(unsigned int *var, unsigned int max) {
 }
 
 char *klee_get_input_str(int val) {
-	if (val == K_UP)
+	if (val == KLEE_UP)
 		return input_strings[0];
-	if (val == K_LEFT)
+	if (val == KLEE_DOWN)
 		return input_strings[1];
-	if (val == K_RIGHT)
+	if (val == KLEE_LEFT)
 		return input_strings[2];
-	if (val == ' ')
+	if (val == KLEE_RIGHT)
 		return input_strings[3];
-	if (val == K_F10)
+	if (val == ' ')
 		return input_strings[4];
+	if (val == KLEE_QUITKEY)
+		return input_strings[5];
 	return input_strings[5];
+}
+
+void print_inputs() {
+	// Print generated inputs
+	char buf[512];
+	char* bufp = buf;
+	int i=0;
+	
+	bufp = bufp + sprintf(bufp, "Round %d input sequence : ", g_round);
+
+	while (inputs[i] != 0xDEADBEEF) {
+		char *input_str = klee_get_input_str(inputs[i]);
+		bufp = bufp + sprintf(bufp, "%s, ", input_str);
+		i++;
+	}
+	KPRINTF(buf);
 }
 
 void klee_write_log(char* buf) {
@@ -191,11 +209,15 @@ void klee_random_inputs() {
 
 		unsigned int max_shift = cdata->max_mov[shift_type][rotations];
 
-		// If we are shifting left, don't ever have a shift distance of 0
-		if (shift_type) {
-			max_shift--;
-			inputs[input_index++] = KLEE_RIGHT;
-		}
+		//// If we are shifting left, don't ever have a shift distance of 0
+		//if (shift_type) {
+		//	max_shift--;
+		//	inputs[input_index++] = KLEE_RIGHT;
+		//}
+
+		//char buf[64];
+		//sprintf(buf, "Max Shift: %d", max_shift);
+		//KPRINTF(buf);
 
 		KLEE_MOD(shifts, max_shift);
 
@@ -208,22 +230,7 @@ void klee_random_inputs() {
 	}
 
 	inputs[input_index++] = 0xDEADBEEF;
-}
-
-void print_inputs() {
-	// Print generated inputs
-	char buf[512];
-	char* bufp = buf;
-	int i=0;
-	
-	bufp = bufp + sprintf(bufp, "Round %d input sequence : ", g_round);
-
-	while (inputs[i] != 0xDEADBEEF) {
-		char *input_str = klee_get_input_str(inputs[i]);
-		bufp = bufp + sprintf(bufp, "%s, ", input_str);
-		i++;
-	}
-	KPRINTF(buf);
+	print_inputs();
 }
 
 void klee_create_inputs() {
