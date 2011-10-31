@@ -359,8 +359,9 @@ void klee_random_inputs() {
 		//if (do_invalid)
 		//	inputs[i++] = K_INVALID;
 
-		inputs[input_index++] = KLEE_DOWN;
+		//inputs[input_index++] = KLEE_DOWN;
 		inputs[i++] = ' ';
+		inputs[i++] = KLEE_QUITKEY;
 	}
 	inputs[i++] = 0xDEADBEEF;
 }
