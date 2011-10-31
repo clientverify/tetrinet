@@ -166,7 +166,7 @@ void klee_enumerate_single_inputs() {
 	}
 }
 
-void klee_random_inputs() {
+void klee_random_inputs_table() {
 	unsigned int i=0, input_index=0;
 	unsigned int rotations, do_quit, shifts, shift_type, do_invalid;
 
@@ -208,6 +208,139 @@ void klee_random_inputs() {
 	}
 
 	inputs[input_index++] = 0xDEADBEEF;
+}
+
+void klee_random_inputs() {
+	unsigned int i=0, rotations, do_quit, shifts, shift_type,do_invalid;
+
+	MAKE_SYMBOLIC(&do_quit, "do_quit", 0);
+	MAKE_SYMBOLIC(&do_invalid, "do_invalid", 1);
+	MAKE_SYMBOLIC(&shifts,  "shifts", 5);
+	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
+	MAKE_SYMBOLIC(&rotations,"rotations", 2);
+
+	if (do_quit == 1) {
+		inputs[i++] = K_F10;
+	} else {
+
+		KLEE_MOD(shift_type, 1);
+		if (shift_type == 0)
+			shift_type = KLEE_LEFT;
+		else
+			shift_type = KLEE_RIGHT;
+
+		//    Piece Types: 
+		//    0    1    2    3    4    5    6
+		//    ##X# .... .... .... .... .... ....
+		//    .... .X#. #X#. #X#. #X.. .X#. #X#.
+		//    .... .##. ..#. #... .##. ##.. .#..
+		//    .... .... .... .... .... .... ....
+		//    Rotational Positions:
+		//    2    1    4    4    2    2    4
+		//   
+		//    Max Moves Left in each Rotation
+		// 1  4    6    5    5    5    5    5   
+		// 2  6    .    5    5    5    5    5  
+		// 3  .    .    5    5    .    .    5  
+		// 4  .    .    6    6    .    .    6    
+		//
+		//    Max Moves Right in each Rotation
+		// 1  4    4    4    4    4    4    4    
+		// 2  5    .    5    5    5    5    5   
+		// 3  .    .    4    4    .    .    4   
+		// 4  .    .    4    4    .    .    4     
+
+		if (current_piece == 0) {
+			KLEE_MOD(rotations, 1);
+			if (shift_type == KLEE_LEFT) {
+				if (rotations == 0) {
+					KLEE_MOD(shifts, 4);
+				} else {
+					KLEE_MOD(shifts, 6);
+				}
+			} else {
+				if (rotations == 0) {
+					KLEE_MOD(shifts, 4);
+				} else {
+					KLEE_MOD(shifts, 5);
+				}
+			}
+		}
+		
+		if (current_piece == 1) {
+			rotations = 0;
+			if (shift_type == KLEE_LEFT) {
+				KLEE_MOD(shifts, 6);
+			} else {
+				KLEE_MOD(shifts, 4);
+			}
+		}
+	
+		if (current_piece == 2 || current_piece == 3 || current_piece == 6) {
+			KLEE_MOD(rotations, 3);
+			if (shift_type == KLEE_LEFT) {
+				if (rotations == 3) {
+					KLEE_MOD(shifts, 6);
+			  } else {
+					KLEE_MOD(shifts, 5);
+				}
+			} else {
+				if (rotations == 1) {
+					KLEE_MOD(shifts, 5);
+				} else {
+					KLEE_MOD(shifts, 4);
+				}
+			}
+		}
+
+		if (current_piece == 4 || current_piece == 5) {
+			KLEE_MOD(rotations, 1);
+			if (shift_type == KLEE_LEFT) {
+				KLEE_MOD(shifts, 5);
+			} else {
+				if (rotations == 0) {
+					KLEE_MOD(shifts, 4);
+				} else {
+					KLEE_MOD(shifts, 5);
+				}
+			}
+		}
+
+		switch (rotations) {
+			case 3:
+				inputs[i++] = KLEE_UP;
+			case 2:
+				inputs[i++] = KLEE_UP;
+			case 1:
+				inputs[i++] = KLEE_UP;
+			default:
+				break;
+		}
+
+		switch (shifts) {
+			case 6:
+				inputs[i++] = shift_type;
+			case 5:
+				inputs[i++] = shift_type;
+			case 4:
+				inputs[i++] = shift_type;
+			case 3:
+				inputs[i++] = shift_type;
+			case 2:
+				inputs[i++] = shift_type;
+			case 1:
+				inputs[i++] = shift_type;
+			default:
+				break;
+		}
+
+		//if (do_invalid)
+		//	inputs[i++] = K_INVALID;
+
+		inputs[input_index++] = KLEE_DOWN;
+		inputs[i++] = ' ';
+	}
+	inputs[i++] = 0xDEADBEEF;
 }
 
 void print_inputs() {
