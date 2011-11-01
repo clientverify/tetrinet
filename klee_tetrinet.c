@@ -145,12 +145,11 @@ input_data_t input_data[7] = {
 
 void klee_enumerate_single_inputs() {
 	int i=0, input_index=0;
-	static unsigned do_quit_game = 0;
+	unsigned int do_quit=1;
 
-	if (do_quit_game) {
-		do_quit_game ^= 1;
+	do_quit ^= 1;
+	if (do_quit) {
 		inputs[input_index++] = KLEE_QUITKEY;
-		inputs[input_index++] = 0xDEADBEEF;
 		inputs[input_index++] = 0xDEADBEEF;
 		return;
 	}
@@ -177,6 +176,7 @@ void klee_enumerate_single_inputs() {
 	}
 
 	inputs[input_index++] = ' ';
+	inputs[input_index++] = KLEE_QUITKEY;
 	inputs[input_index++] = 0xDEADBEEF;
 
 	cdata->s++;
@@ -430,7 +430,7 @@ int klee_getch() {
 		g_new_piece = 0;
 		input_index = 0;
 		memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
-		retval = KLEE_DOWN;
+		retval = 0;
 	} else {
 		retval = inputs[input_index++];
 	}
