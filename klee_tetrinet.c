@@ -241,8 +241,10 @@ void klee_random_inputs() {
 	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
 	MAKE_SYMBOLIC(&rotations,"rotations", 2);
 
-	if (do_quit == 1) {
+	if (do_quit == 0) {
 		inputs[i++] = K_F10;
+	}	else if (do_quit == 1) {
+		inputs[i++] = KLEE_QUITKEY;
 	} else {
 
 		KLEE_MOD(shift_type, 1);
@@ -361,9 +363,9 @@ void klee_random_inputs() {
 
 		//inputs[input_index++] = KLEE_DOWN;
 		inputs[i++] = ' ';
-		inputs[i++] = KLEE_QUITKEY;
 	}
 	inputs[i++] = 0xDEADBEEF;
+	//print_inputs();
 }
 
 void klee_create_inputs() {
@@ -408,11 +410,6 @@ int klee_getch() {
 		retval = inputs[input_index++];
 	}
 
-	//// Print input
-	//char buf[64];
-	//sprintf(buf, "Round: %d Input[%d] = %s(%x)", 
-	//	g_round, input_index-1, klee_get_input_str(retval), retval);
-	//KPRINTF(buf);
 	return retval;
 }
 
@@ -421,33 +418,29 @@ int klee_getch() {
 // Returns either a network socket event or a key press (symbolic).
 int klee_wait_for_input(int msec)
 {
-	int c;
-
 	if (g_round > g_last_round && g_new_piece) {
+ 		KPRINTF("user input event");
 		return klee_getch();
 	}
 
-	KPRINTF("KLEE_NUKLEAR_MAKE_SYMBOLIC");
-	
 	unsigned int ev;
-	//klee_nuklear_make_symbolic(&ev, "ev");
 	MAKE_SYMBOLIC(&ev, "ev", 0);
 
-	if (ev > 2)
-	  KEXIT;
-
-	if (ev == 1) {
+	switch(ev) {
+		case 1:
  		if (msec == -1) {
  			KPRINTF("select timeout event (invalid, exiting)");
  			KEXIT;
  		}
  		KPRINTF("select timeout event");
  		return -2;	/* out of time */
-	} 
 
-	if (ev == 2) {
+		case 2:
 		KPRINTF("server message event");
 		return -1;
+		
+		default:
+	  KEXIT;
 	}
 
 	KEXIT;

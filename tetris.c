@@ -566,7 +566,8 @@ void new_piece(void)
 void lose_game(void)
 {
 	if (slow_mode) usleep(50000);
-	send_field(NULL);
+	// XXX TEMP removal to make logs more ambiguous
+	// send_field(NULL);
 	sockprintf(server_sock, "playerlost %d", my_playernum);
 	playing_game = 0;
 	not_playing_game = 1;

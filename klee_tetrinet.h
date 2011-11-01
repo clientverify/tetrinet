@@ -15,6 +15,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 
 #define IFKLEE(x) x
 #define KPRINTF(x) klee_warning(x)
+//#define KPRINTF(x)
 #define KEXIT klee_silent_exit(1);
 //#define MAKE_SYMBOLIC(x,y,z) klee_nuklear_make_symbolic(x,y)
 #define MAKE_SYMBOLIC(x,y,z) klee_make_symbolic(x, sizeof(unsigned), y)
@@ -25,7 +26,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_DOWN K_DOWN
 #define KLEE_LEFT K_LEFT
 #define KLEE_RIGHT K_RIGHT
-#define KLEE_QUITKEY ('9'|0x80)
+#define KLEE_QUITKEY K_F9
 
 #else
 
