@@ -129,16 +129,17 @@ typedef struct {
 	int rot;
 	int max_rot;
 	int max_mov[2][4];
+	int c;
 } input_data_t;
 
 input_data_t input_data[7] = {
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,5,0,0} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={4,0,0,0} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0} },
-{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4} } 
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,5,0,0}, c=21 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={4,0,0,0}, c=11 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, c=42 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, c=42 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0}, c=21 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0}, c=21 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, c=42 } 
 };
 
 void klee_enumerate_single_inputs() {
