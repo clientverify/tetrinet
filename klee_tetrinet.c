@@ -145,6 +145,15 @@ input_data_t input_data[7] = {
 
 void klee_enumerate_single_inputs() {
 	int i=0, input_index=0;
+	static unsigned do_quit_game = 0;
+
+	if (do_quit_game) {
+		do_quit_game ^= 1;
+		inputs[input_index++] = KLEE_QUITKEY;
+		inputs[input_index++] = 0xDEADBEEF;
+		inputs[input_index++] = 0xDEADBEEF;
+		return;
+	}
 
 	if (input_generation_type == 1) {
 		if (!(input_data[0].c) && !(input_data[1].c) && !(input_data[2].c) && 
@@ -168,7 +177,6 @@ void klee_enumerate_single_inputs() {
 	}
 
 	inputs[input_index++] = ' ';
-	inputs[input_index++] = KLEE_QUITKEY;
 	inputs[input_index++] = 0xDEADBEEF;
 
 	cdata->s++;
