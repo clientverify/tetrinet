@@ -30,10 +30,11 @@ int input_index = 0;
 char* input_strings[] = {"UP", "DN", "LF", "RT", "SP", "QT", "INVALID"};
 
 void klee_increment_round() { g_round++; }
+
 int klee_new_piece() { 
 	g_new_piece = 1;
 
-	if (input_generation_type == 1) {
+	if (input_generation_type == 2) {
 		return current_enumerate_piece;
 	}
 	return -1;
@@ -133,17 +134,28 @@ typedef struct {
 } input_data_t;
 
 input_data_t input_data[7] = {
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,5,0,0}, c=21 },
-{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={4,0,0,0}, c=11 },
-{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, c=42 },
-{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, c=42 },
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0}, c=21 },
-{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0}, c=21 },
-{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, c=42 } 
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={4,6,0,0}, .max_mov[1]={4,5,0,0}, .c=21 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=1, .max_mov[0]={6,0,0,0}, .max_mov[1]={4,0,0,0}, .c=11 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, .c=42 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, .c=42 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0}, .c=21 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=2, .max_mov[0]={5,5,0,0}, .max_mov[1]={4,5,0,0}, .c=21 },
+{ .s=0, .s_type=0, .rot=0, .max_rot=4, .max_mov[0]={5,5,5,6}, .max_mov[1]={4,5,4,4}, .c=42 } 
 };
 
 void klee_enumerate_single_inputs() {
 	int i=0, input_index=0;
+
+	if (input_generation_type == 1) {
+		if (!(input_data[0].c) && !(input_data[1].c) && !(input_data[2].c) && 
+				!(input_data[3].c) && !(input_data[4].c) && !(input_data[5].c) && 
+				!(input_data[6].c)) {
+			inputs[0] = ('0'|0x80);
+			inputs[1] = 0xDEADBEEF;
+			inputs[2] = 0xDEADBEEF;
+			return;
+		}
+	}
 
 	input_data_t *cdata = &(input_data[current_piece]);
 
@@ -174,14 +186,17 @@ void klee_enumerate_single_inputs() {
 
 	if (cdata->rot >= cdata->max_rot) {
 		//advance next piece 
-		if (current_enumerate_piece >= 6) {
-			inputs[0] = ('0'|0x80);
-			inputs[1] = 0xDEADBEEF;
+		if (input_generation_type == 2) {
+			if (current_enumerate_piece >= 6) {
+				inputs[0] = ('0'|0x80);
+				inputs[1] = 0xDEADBEEF;
+			}
+			current_enumerate_piece = (current_enumerate_piece + 1 ) % 7;
+		} else if (input_generation_type == 1) {
+			cdata->c = 0;
 		}
-		current_enumerate_piece = (current_enumerate_piece + 1 ) % 7;
 		// reset piece data
 		cdata->s = cdata->s_type = cdata->rot = 0;
-
 	}
 }
 
@@ -384,6 +399,7 @@ void klee_create_inputs() {
 	switch (input_generation_type) {
 #ifndef KLEE
 		case 1:
+		case 2:
 			klee_enumerate_single_inputs();
 			return;
 #endif
