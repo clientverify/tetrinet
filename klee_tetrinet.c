@@ -29,7 +29,11 @@ unsigned int inputs[INPUTS_LENGTH];
 int input_index = 0;
 char* input_strings[] = {"UP", "DN", "LF", "RT", "SP", "QT", "INVALID"};
 
-void klee_increment_round() { g_round++; }
+void klee_increment_round() { 
+#ifndef KLEE
+	g_round++;
+#endif
+}
 
 int klee_new_piece() { 
 	g_new_piece = 1;
@@ -443,7 +447,7 @@ int klee_getch() {
 // Returns either a network socket event or a key press (symbolic).
 int klee_wait_for_input(int msec)
 {
-	if (g_round > g_last_round && g_new_piece) {
+	if (g_new_piece) {
  		KPRINTF("user input event");
 		return klee_getch();
 	}
