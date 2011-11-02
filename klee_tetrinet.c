@@ -401,10 +401,10 @@ void klee_create_inputs() {
 	// initialize game board with random tiles
 	if (starting_height > 0) {
 		Field *f = &fields[my_playernum-1];
-		int y;
+		int x,y;
 		for (y=0; y<=starting_height; y++) {
-			memset((*f)[FIELD_HEIGHT-y], 1, FIELD_WIDTH);
-			(*f)[FIELD_HEIGHT-y][nuklear_rand() % FIELD_WIDTH] = 0;
+			for (x=0; x<FIELD_WIDTH; ++x) (*f)[FIELD_HEIGHT-y][x] = 1;
+			(*f)[FIELD_HEIGHT-y][y % FIELD_WIDTH] = 0;
 		}
 	}
 
