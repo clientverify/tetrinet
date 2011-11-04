@@ -92,7 +92,7 @@ then
 
   ptypeValues=`seq 0 0`
   rateValues=`echo 1`
-  COUNT=20
+  COUNT=0
 
 
   for ptype in $ptypeValues
@@ -118,11 +118,13 @@ then
           done
 
           echo "creating $KTEST_FILE"
-          OPTS=" -inputgenerationtype 1 "
+          OPTS=" -inputgenerationtype 0 -maxround 40 "
+          #OPTS=" -inputgenerationtype 1 "
           OPTS+=" -log $LOG_DIR/$DESC.log -ktest $KTEST_FILE "
           OPTS+=" -random -seed $i "
           OPTS+=" -autostart -partialtype $ptype -partialrate $rate"
           OPTS+=" -startingheight $i "
+          OPTS+=" -slowmode "
           OPTS+=" $PLAYER_NAME $SERVER_ADDRESS "
 
           echo "executing $CLIENT_COMMAND $OPTS"

@@ -269,11 +269,27 @@ void klee_random_inputs() {
 	MAKE_SYMBOLIC(&shift_type, "shift_type", 1);
 	MAKE_SYMBOLIC(&rotations,"rotations", 2);
 
+#ifndef KLEE
+	static unsigned quit_round = 0;
+	quit_round++;
+	if (quit_round % 2 == 0)
+		do_quit = 1;
+	else
+		do_quit = 0;
+
+	if (do_quit == 0) {
+		inputs[i++] = KLEE_QUITKEY;
+	} else {
+
+#else
+
 	if (do_quit == 0) {
 		inputs[i++] = K_F10;
 	}	else if (do_quit == 1) {
 		inputs[i++] = KLEE_QUITKEY;
 	} else {
+
+#endif
 
 		KLEE_MOD(shift_type, 1);
 		if (shift_type == 0)
