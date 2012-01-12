@@ -4,10 +4,18 @@
 CC = cc
 LD = cc
 
+ifndef LLVM_GCC_DIR
+	LLVM_GCC_DIR = ../../local/bin
+endif
+ifndef LLVM_DIR
+	LLVM_DIR = ../../local/bin
+endif
+
+LLVM_GCC = $(LLVM_GCC_DIR)/llvm-gcc
+LLVM_LD = $(LLVM_DIR)/llvm-ld
+
 # The passed compilation flags
-CFLAGS = -O2 -I/usr/include/ncurses -g -Wall -fno-builtin-log
 CFLAGS = -O2 -I/usr/include/ncurses -g -fno-builtin-log
-SERVER_CFLAGS = -lncurses
 
 # Whether to enable IPv6 support
 #IPV6 = 1
@@ -24,67 +32,106 @@ LDFLAGS = -lncurses
 
 ######## End of configuration area
 
+BASE_SRCS = sockets.c tetrinet.c tetris.c klee_tetrinet.c
+SRCS = $(BASE_SRCS) tty.c 
+KTEST_SRCS = $(BASE_SRCS) tty.c KTest.c
+SERVER_SRCS = $(BASE_SRCS) KTest.c server.c
+KLEE_SRCS = $(BASE_SRCS) tty.c
 
-OBJS = sockets.o tetrinet.o tetris.o tty.o klee_tetrinet.o
+BIN_DIR = ./bin
 
 ifdef IPV6
 	CFLAGS += -DHAVE_IPV6
 endif
 ifdef BUILTIN_SERVER
 	CFLAGS += -DBUILTIN_SERVER
-	OBJS += server.o
+	SRCS += server.c
 endif
 ifdef NO_BRUTE_FORCE_DECRYPTION
 	CFLAGS += -DNO_BRUTE_FORCE_DECRYPTION
 endif
-ifdef KLEE 
-	CC = llvm-gcc
-	LD = $(GSECROOT)/local/llvm-2.7/bin/llvm-ld -strip-debug
-	CFLAGS = -I/usr/include/ncurses -DKLEE -emit-llvm 
-	LDFLAGS = 
-	SERVER_CFLAGS =
-endif
-ifdef KTEST
-	CFLAGS += -DKTEST
-	OBJS += KTest.o
-endif
-
 
 ########
 
-#all: tetrinet tetrinet-server
-all: tetrinet 
+TARGETS = tetrinet tetrinet-server tetrinet-ktest tetrinet-klee tags
 
-install: all
-	cp -p tetrinet tetrinet-server /usr/games
+all: $(TARGETS) 
+
+.PHONY: all
+
+$(BIN_DIR):
+	@mkdir $(BIN_DIR)
+
+tags:
+	ctags *.c *.h
+
+########
+
+OBJS_DIR = .objs
+OBJS = $(addprefix $(OBJS_DIR)/,$(SRCS:.c=.o))
+
+$(OBJS): $(OBJS_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -MMD -o $@ -c $<
+
+$(OBJS_DIR):
+	@mkdir $(OBJS_DIR)
+
+-include $(OBJS:.o=.d)
+
+tetrinet: $(BIN_DIR) $(OBJS_DIR) $(OBJS)
+	$(LD) $(LDFLAGS) -o $(BIN_DIR)/$@ $(OBJS)
+
+########
+
+KTEST_OBJS_DIR = .ktest_objs
+KTEST_OBJS = $(addprefix $(KTEST_OBJS_DIR)/,$(KTEST_SRCS:.c=.o))
+
+$(KTEST_OBJS): $(KTEST_OBJS_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -MMD -DKTEST -o $@ -c $<
+
+$(KTEST_OBJS_DIR):
+	@mkdir $(KTEST_OBJS_DIR)
+
+-include $(KTEST_OBJS:.o=.d)
+
+tetrinet-ktest: $(BIN_DIR) $(KTEST_OBJS_DIR) $(KTEST_OBJS)
+	$(LD) $(LDFLAGS) -o $(BIN_DIR)/$@ $(KTEST_OBJS)
+
+########
+
+SERVER_OBJS_DIR = .server_objs
+SERVER_OBJS = $(addprefix $(SERVER_OBJS_DIR)/,$(SERVER_SRCS:.c=.o))
+
+$(SERVER_OBJS): $(SERVER_OBJS_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -MMD -lncurses -DSERVER_ONLY -o $@ -c $<
+
+$(SERVER_OBJS_DIR):
+	@mkdir $(SERVER_OBJS_DIR)
+
+-include $(SERVER_OBJS:.o=.d)
+
+tetrinet-server: $(BIN_DIR) $(SERVER_OBJS_DIR) $(SERVER_OBJS)
+	$(LD) $(LDFLAGS) -o $(BIN_DIR)/$@ $(SERVER_OBJS)
+
+########
+
+KLEE_OBJS_DIR = .klee_objs
+KLEE_OBJS = $(addprefix $(KLEE_OBJS_DIR)/,$(KLEE_SRCS:.c=.o))
+
+$(KLEE_OBJS): $(KLEE_OBJS_DIR)/%.o: %.c
+	$(LLVM_GCC) -MMD -I/usr/include/ncurses -DKLEE -emit-llvm -o $@ -c $<
+
+$(KLEE_OBJS_DIR):
+	@mkdir $(KLEE_OBJS_DIR)
+
+-include $(KLEE_OBJS:.o=.d)
+
+tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
+	$(LLVM_LD) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+
+########
 
 clean:
-	rm -f tetrinet tetrinet-server tetrinet-ktest tetrinet.bc tetrinet-llvm tetrinet-native *.o
-
-spotless: clean
-
-binonly:
-	rm -f *.[cho] Makefile
-	rm -rf CVS/
-
-########
+	@rm -rf $(BIN_DIR) $(OBJS_DIR) $(KTEST_OBJS_DIR) $(SERVER_OBJS_DIR) $(KLEE_OBJS_DIR) tags
 
 
-tetrinet: $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
-
-tetrinet-server: server.c sockets.c tetrinet.c tetris.c klee_tetrinet.c KTest.c server.h sockets.h tetrinet.h tetris.h klee_tetrinet.h KTest.h
-	$(CC) $(CFLAGS) $(SERVER_CFLAGS) -o $@ -DSERVER_ONLY server.c sockets.c tetrinet.c tetris.c klee_tetrinet.c KTest.c
-
-.c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
-
-server.o:	server.c tetrinet.h tetris.h server.h sockets.h
-sockets.o:	sockets.c sockets.h tetrinet.h
-tetrinet.o:	tetrinet.c tetrinet.h io.h server.h sockets.h tetris.h
-tetris.o:	tetris.c tetris.h tetrinet.h io.h sockets.h
-tty.o:		tty.c tetrinet.h tetris.h io.h
-klee_tetrinet.o:klee_tetrinet.c klee_tetrinet.h io.h KTest.h
-KTest.o:	KTest.c KTest.h
-
-tetrinet.h:	io.h
