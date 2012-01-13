@@ -40,6 +40,9 @@ KLEE_SRCS = $(BASE_SRCS) tty.c
 
 BIN_DIR = ./bin
 
+ifndef PREFIX
+	PREFIX = "/usr/local"
+endif
 ifdef IPV6
 	CFLAGS += -DHAVE_IPV6
 endif
@@ -53,17 +56,20 @@ endif
 
 ########
 
-TARGETS = tetrinet tetrinet-server tetrinet-ktest tetrinet-klee tags
+TARGETS = tetrinet tetrinet-server tetrinet-ktest tetrinet-klee
 
-all: $(TARGETS) 
+all: $(TARGETS) tags
 
-.PHONY: all
+install: all
+	cp -p $(BIN_DIR)/* $(PREFIX)/bin/
 
 $(BIN_DIR):
 	@mkdir $(BIN_DIR)
 
 tags:
 	ctags *.c *.h
+
+.PHONY: all
 
 ########
 
