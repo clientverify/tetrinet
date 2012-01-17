@@ -1,8 +1,8 @@
 ######## Configuration area
 
 # Your C compiler
-CC = cc
-LD = cc
+CC = gcc
+LD = gcc
 
 ifndef LLVMGCC_BIN_DIR
 	LLVMGCC_BIN_DIR = ../../local/bin
@@ -16,11 +16,11 @@ endif
 
 LLVMGCC = $(LLVMGCC_BIN_DIR)/llvm-gcc
 LLVM_LD = $(LLVM_BIN_DIR)/llvm-ld
-NCURSES_INCLUDE = $(NCURSES_DIR)/include/ncurses
+NCURSES_INCLUDE = $(NCURSES_DIR)/include
 NCURSES_LIB = $(NCURSES_DIR)/lib
 
 # The passed compilation flags
-CFLAGS = -O2 -I$(NCURSES_INCLUDE) -g -fno-builtin-log
+CFLAGS = -O2 -I$(NCURSES_INCLUDE) -I$(NCURSES_INCLUDE)/ncurses -g -fno-builtin-log
 
 # Whether to enable IPv6 support
 #IPV6 = 1
@@ -63,7 +63,7 @@ endif
 
 TARGETS = tetrinet tetrinet-server tetrinet-ktest tetrinet-klee
 
-all: $(TARGETS) tags
+all: $(TARGETS)
 
 install: all
 	cp -p $(BIN_DIR)/* $(PREFIX)/bin/
