@@ -4,18 +4,23 @@
 CC = cc
 LD = cc
 
-ifndef LLVM_GCC_DIR
-	LLVM_GCC_DIR = ../../local/bin
+ifndef LLVMGCC_BIN_DIR
+	LLVMGCC_BIN_DIR = ../../local/bin
 endif
-ifndef LLVM_DIR
-	LLVM_DIR = ../../local/bin
+ifndef LLVM_BIN_DIR
+	LLVM_BIN_DIR = ../../local/bin
+endif
+ifndef NCURSES_DIR
+	NCURSES_DIR = ../../local
 endif
 
-LLVM_GCC = $(LLVM_GCC_DIR)/llvm-gcc
-LLVM_LD = $(LLVM_DIR)/llvm-ld
+LLVMGCC = $(LLVMGCC_BIN_DIR)/llvm-gcc
+LLVM_LD = $(LLVM_BIN_DIR)/llvm-ld
+NCURSES_INCLUDE = $(NCURSES_DIR)/include/ncurses
+NCURSES_LIB = $(NCURSES_DIR)/lib
 
 # The passed compilation flags
-CFLAGS = -O2 -I/usr/include/ncurses -g -fno-builtin-log
+CFLAGS = -O2 -I$(NCURSES_INCLUDE) -g -fno-builtin-log
 
 # Whether to enable IPv6 support
 #IPV6 = 1
@@ -28,7 +33,7 @@ CFLAGS = -O2 -I/usr/include/ncurses -g -fno-builtin-log
 # clients, enable this.
 # NO_BRUTE_FORCE_DECRYPTION = 1
 
-LDFLAGS = -lncurses
+LDFLAGS = -lncurses -L$(NCURSES_LIB) 
 
 ######## End of configuration area
 
@@ -125,7 +130,7 @@ KLEE_OBJS_DIR = .klee_objs
 KLEE_OBJS = $(addprefix $(KLEE_OBJS_DIR)/,$(KLEE_SRCS:.c=.o))
 
 $(KLEE_OBJS): $(KLEE_OBJS_DIR)/%.o: %.c
-	$(LLVM_GCC) -MMD -I/usr/include/ncurses -DKLEE -emit-llvm -o $@ -c $<
+	$(LLVMGCC) $(CFLAGS) -MMD -I/usr/include/ncurses -DKLEE -emit-llvm -o $@ -c $<
 
 $(KLEE_OBJS_DIR):
 	@mkdir $(KLEE_OBJS_DIR)
@@ -133,7 +138,7 @@ $(KLEE_OBJS_DIR):
 -include $(KLEE_OBJS:.o=.d)
 
 tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
-	$(LLVM_LD) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+	$(LLVM_LD) $(LDFLAGS) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
 
