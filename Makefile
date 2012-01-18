@@ -1,8 +1,12 @@
 ######## Configuration area
 
-# Your C compiler
-CC = gcc
-LD = gcc
+ifndef CC
+	CC = cc
+endif
+
+ifndef LD
+	LD = $(CC)
+endif
 
 ifndef LLVMGCC_BIN_DIR
 	LLVMGCC_BIN_DIR = ../../local/bin
