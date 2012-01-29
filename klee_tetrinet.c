@@ -277,7 +277,7 @@ void klee_random_inputs() {
 	else
 		do_quit = 0;
 
-	if (do_quit == 0) {
+	if (input_generation_type != 0 && do_quit == 0) {
 		inputs[i++] = KLEE_QUITKEY;
 	} else {
 
