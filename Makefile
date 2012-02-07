@@ -20,7 +20,8 @@ NCURSES_INCLUDE = $(NCURSES_DIR)/include
 NCURSES_LIB = $(NCURSES_DIR)/lib
 
 # The passed compilation flags
-CFLAGS = -O2 -I$(NCURSES_INCLUDE) -I$(NCURSES_INCLUDE)/ncurses -g -fno-builtin-log
+CFLAGS_INCLUDE = -I$(NCURSES_INCLUDE) -I$(NCURSES_INCLUDE)/ncurses
+CFLAGS = $(CFLAGS_INCLUDE) -O2 -g -fno-builtin-log
 
 # Whether to enable IPv6 support
 #IPV6 = 1
@@ -130,7 +131,7 @@ KLEE_OBJS_DIR = .klee_objs
 KLEE_OBJS = $(addprefix $(KLEE_OBJS_DIR)/,$(KLEE_SRCS:.c=.o))
 
 $(KLEE_OBJS): $(KLEE_OBJS_DIR)/%.o: %.c
-	$(LLVMGCC) $(CFLAGS) -MMD -I/usr/include/ncurses -DKLEE -emit-llvm -o $@ -c $<
+	$(LLVMGCC) $(CFLAGS_INCLUDE) -MMD -DKLEE -emit-llvm -o $@ -c $<
 
 $(KLEE_OBJS_DIR):
 	@mkdir $(KLEE_OBJS_DIR)
@@ -138,7 +139,7 @@ $(KLEE_OBJS_DIR):
 -include $(KLEE_OBJS:.o=.d)
 
 tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
-	$(LLVM_LD) $(LDFLAGS) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+	$(LLVM_LD) $(LDFLAGS) -strip-debug -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
 
