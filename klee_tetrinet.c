@@ -440,19 +440,33 @@ void klee_create_inputs() {
 
 int klee_getch() {
 	int retval;
-	if (input_index == 0) {
-		klee_create_inputs();
-	}
-
-	if (inputs[input_index] == 0xDEADBEEF) {
-		KPRINTF("last user input event");
-		g_last_round = g_round;
-		g_new_piece = 0;
-		input_index = 0;
-		memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
-		retval = 0;
+	if (input_generation_type == 3) {
+		int input;
+		MAKE_SYMBOLIC(&input, "input", 0);
+		if (input == 0xDEADBEEF) {
+			g_last_round = g_round;
+			g_new_piece = 0;
+			//input_index = 0;
+			//memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
+			retval = 0;
+		} else {
+			retval = input;
+		}
 	} else {
-		retval = inputs[input_index++];
+		if (input_index == 0) {
+			klee_create_inputs();
+		}
+
+		if (inputs[input_index] == 0xDEADBEEF) {
+			KPRINTF("last user input event");
+			g_last_round = g_round;
+			g_new_piece = 0;
+			input_index = 0;
+			memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
+			retval = 0;
+		} else {
+			retval = inputs[input_index++];
+		}
 	}
 
 	return retval;
