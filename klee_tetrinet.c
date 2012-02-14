@@ -440,18 +440,19 @@ void klee_create_inputs() {
 
 int klee_getch() {
 	int retval;
-	if (input_generation_type == 3) {
+	if (input_generation_type >= 3) {
 		int input;
 		MAKE_SYMBOLIC(&input, "input", 0);
-		if (input == 0xDEADBEEF) {
+		if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
 			g_last_round = g_round;
 			g_new_piece = 0;
-			//input_index = 0;
-			//memset(inputs, 0, INPUTS_LENGTH * sizeof(unsigned int));
 			retval = 0;
+			input_index = 0;
 		} else {
+			input_index++;
 			retval = input;
 		}
+
 	} else {
 		if (input_index == 0) {
 			klee_create_inputs();
