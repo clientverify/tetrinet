@@ -49,6 +49,8 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_QUITKEY ('9'|0x80)
 
 #define CLIVER_PRINT(x)
+void cliver_disable_tracking();
+void cliver_enable_tracking();
 #endif
 
 #endif //KLEE_TETRINET_H

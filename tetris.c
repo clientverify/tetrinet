@@ -503,7 +503,7 @@ static void set_next_piece(void) {
 	next_piece = klee_new_piece();
 	if (next_piece == -1) {
 		n = nuklear_rand() % 100;
-		next_piece = 0;
+		next_piece = 0;	
 		while (n >= piecefreq[next_piece] && next_piece < 6) {
 			n -= piecefreq[next_piece];
 			next_piece++;

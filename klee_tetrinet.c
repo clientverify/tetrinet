@@ -29,6 +29,11 @@ unsigned int inputs[INPUTS_LENGTH];
 int input_index = 0;
 char* input_strings[] = {"UP", "DN", "LF", "RT", "SP", "QT", "INVALID"};
 
+#ifndef KLEE
+void cliver_disable_tracking() {}
+void cliver_enable_tracking() {}
+#endif
+
 void klee_increment_round() { 
 #ifndef KLEE
 	g_round++;
@@ -36,12 +41,15 @@ void klee_increment_round() {
 }
 
 int klee_new_piece() { 
+	cliver_disable_tracking();
+	int retval = -1;
 	g_new_piece = 1;
 
 	if (input_generation_type == 2) {
-		return current_enumerate_piece;
+		retval = current_enumerate_piece;
 	}
-	return -1;
+  cliver_enable_tracking();
+	return retval;
 }
 
 int nuklear_rand() {
