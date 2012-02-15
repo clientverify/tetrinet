@@ -460,8 +460,8 @@ int klee_getch() {
 		}
 		//input = sinput;
 		if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
-			//CLIVER_PRINT("last user input event");
-			//printf("input_index = %d\n", input_index);
+			//CLIVER_PRINT("last user input event (input_gen_type > 2)");
+			//IFKLEE(printf("input_index = %d\n", input_index));
 			g_last_round = g_round;
 			g_new_piece = 0;
 			retval = 0;
@@ -478,8 +478,8 @@ int klee_getch() {
 
 		if (inputs[input_index] == 0xDEADBEEF) {
 			KPRINTF("last user input event");
-			CLIVER_PRINT("last user input event");
-			printf("input_index = %d\n", input_index);
+			//CLIVER_PRINT("last user input event (input_gen_type 0)");
+			//IFKLEE(printf("input_index = %d\n", input_index));
 			g_last_round = g_round;
 			g_new_piece = 0;
 			input_index = 0;
@@ -552,7 +552,7 @@ int klee_wait_for_input(int msec)
 	  	KPRINTF("select timeout event");
 	  	retval = -2;
 	  	break;
-	  	case 2:
+			default:
 	  	KPRINTF("server message event");
 	  	retval = -1;
 	  	break;
