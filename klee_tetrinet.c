@@ -441,9 +441,19 @@ void klee_create_inputs() {
 int klee_getch() {
 	int retval;
 	if (input_generation_type >= 3) {
-		int input;
-		MAKE_SYMBOLIC(&input, "input", 0);
+		int input, sinput;
+		MAKE_SYMBOLIC(&sinput, "input", 0);
+		// Using switch statement to decouple symbolic variable
+		switch(sinput) {
+		case KLEE_UP: 		input = KLEE_UP; 		break;
+		case KLEE_LEFT: 	input = KLEE_LEFT;	break;
+		case KLEE_RIGHT: 	input = KLEE_RIGHT;	break;
+		default: 					input = 0xDEADBEEF;	break;
+		}
+		//input = sinput;
 		if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
+			//CLIVER_PRINT("last user input event");
+			//printf("input_index = %d\n", input_index);
 			g_last_round = g_round;
 			g_new_piece = 0;
 			retval = 0;
@@ -460,6 +470,8 @@ int klee_getch() {
 
 		if (inputs[input_index] == 0xDEADBEEF) {
 			KPRINTF("last user input event");
+			CLIVER_PRINT("last user input event");
+			printf("input_index = %d\n", input_index);
 			g_last_round = g_round;
 			g_new_piece = 0;
 			input_index = 0;
@@ -475,6 +487,7 @@ int klee_getch() {
 
 #ifdef KLEE
 
+#if 0
 // Returns either a network socket event or a key press (symbolic).
 int klee_wait_for_input(int msec)
 {
@@ -504,6 +517,42 @@ int klee_wait_for_input(int msec)
 	}
 
 	KEXIT;
+}
+#endif
+
+// Returns either a network socket event or a key press (symbolic).
+int klee_wait_for_input(int msec)
+{
+	int retval;
+	cliver_disable_tracking();
+
+	if (g_new_piece) {
+
+		KPRINTF("user input event");
+		int res = klee_getch();
+		if (res) 
+			retval = res;
+		else
+			retval = ' ';
+
+	} else {
+
+	  unsigned int ev;
+	  MAKE_SYMBOLIC(&ev, "ev", 0);
+	  switch (ev) {
+	  	case 1:
+	  	KPRINTF("select timeout event");
+	  	retval = -2;
+	  	break;
+	  	case 2:
+	  	KPRINTF("server message event");
+	  	retval = -1;
+	  	break;
+	  }
+
+  }
+	cliver_enable_tracking();
+	return retval;
 }
 
 // Merge point function

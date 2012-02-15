@@ -28,6 +28,8 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_RIGHT K_RIGHT
 #define KLEE_QUITKEY K_F9
 
+#define CLIVER_PRINT(x) cliver_print(x)
+
 #else
 
 #define IFKLEE(x)
@@ -46,6 +48,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_RIGHT KEY_RIGHT
 #define KLEE_QUITKEY ('9'|0x80)
 
+#define CLIVER_PRINT(x)
 #endif
 
 #endif //KLEE_TETRINET_H
