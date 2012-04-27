@@ -953,6 +953,8 @@ int main(int ac, char **av)
 	disconn(server_sock);
 
 	ktest_finish(0, NULL);
+
+        IFKLEE(cliver_finish());
 	return 0;
 }
 
