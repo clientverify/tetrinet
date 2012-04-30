@@ -453,9 +453,10 @@ int klee_getch() {
 		MAKE_SYMBOLIC(&sinput, "input", 0);
 		// Using switch statement to decouple symbolic variable
 		switch(sinput) {
-		case KLEE_UP: 		input = KLEE_UP; 		break;
+		case KLEE_UP: 		input = KLEE_UP; 	break;
 		case KLEE_LEFT: 	input = KLEE_LEFT;	break;
 		case KLEE_RIGHT: 	input = KLEE_RIGHT;	break;
+		case KLEE_QUITKEY:      input = KLEE_QUITKEY;	break;
 		default: 					input = 0xDEADBEEF;	break;
 		}
 		//input = sinput;
