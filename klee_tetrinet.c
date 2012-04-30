@@ -457,18 +457,20 @@ int klee_getch() {
 		case KLEE_LEFT: 	input = KLEE_LEFT;	break;
 		case KLEE_RIGHT: 	input = KLEE_RIGHT;	break;
 		case KLEE_QUITKEY:      input = KLEE_QUITKEY;	break;
-		default: 					input = 0xDEADBEEF;	break;
+		case KLEE_EXITKEY:      input = KLEE_EXITKEY;	break;
+		default: 		input = 0xDEADBEEF;	break;
 		}
 		//input = sinput;
-		if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
+		//if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
+		if (input == 0xDEADBEEF) {
 			//CLIVER_PRINT("last user input event (input_gen_type > 2)");
 			//IFKLEE(printf("input_index = %d\n", input_index));
 			g_last_round = g_round;
 			g_new_piece = 0;
 			retval = 0;
-			input_index = 0;
+			//input_index = 0;
 		} else {
-			input_index++;
+			//input_index++;
 			retval = input;
 		}
 

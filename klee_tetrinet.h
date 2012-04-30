@@ -27,6 +27,7 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_LEFT K_LEFT
 #define KLEE_RIGHT K_RIGHT
 #define KLEE_QUITKEY K_F9
+#define KLEE_EXITKEY K_F10
 
 #define CLIVER_PRINT(x) cliver_print(x)
 
@@ -46,7 +47,8 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_DOWN KEY_DOWN
 #define KLEE_LEFT KEY_LEFT
 #define KLEE_RIGHT KEY_RIGHT
-#define KLEE_QUITKEY ('9'|0x80)
+#define KLEE_QUITKEY (0410 + 9)
+#define KLEE_EXITKEY (0410 + 10)
 
 #define CLIVER_PRINT(x)
 void cliver_disable_tracking();
