@@ -20,6 +20,18 @@
 
 #include "klee_tetrinet.h"
 
+/* Hack to get around bug in llvm-gcc: http://llvm.org/bugs/show_bug.cgi?id=3373 */
+/* From: /usr/include/bits/select.h */
+// FROM /usr/include/bits/select.h
+# define MY_FD_ZERO(set)  \
+  do {									      \
+    unsigned int __i;							      \
+    fd_set *__arr = (set);						      \
+    for (__i = 0; __i < sizeof (fd_set) / sizeof (__fd_mask); ++__i)	      \
+      __FDS_BITS (__arr)[__i] = 0;					      \
+  } while (0)
+
+
 /*************************************************************************/
 
 #define MY_HLINE	(fancy ? ACS_HLINE : '-')
@@ -48,7 +60,7 @@ static int wait_for_input(int msec)
 	static int escape = 0;
 	static unsigned char timeout_skip = 1;
 
-	FD_ZERO(&fds);
+	MY_FD_ZERO(&fds);
 	FD_SET(0, &fds);
 	FD_SET(server_sock, &fds);
 	tv.tv_sec = msec/1000;
