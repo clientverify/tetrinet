@@ -453,12 +453,12 @@ int klee_getch() {
 		MAKE_SYMBOLIC(&sinput, "input", 0);
 		// Using switch statement to decouple symbolic variable
 		switch(sinput) {
-		case KLEE_UP: 		input = KLEE_UP; 	break;
-		case KLEE_LEFT: 	input = KLEE_LEFT;	break;
-		case KLEE_RIGHT: 	input = KLEE_RIGHT;	break;
-		case KLEE_QUITKEY:      input = KLEE_QUITKEY;	break;
-		case KLEE_EXITKEY:      input = KLEE_EXITKEY;	break;
-		default: 		input = 0xDEADBEEF;	break;
+		case KLEE_UP: 		{CLIVER_PRINT("KLEE_UP");      input = KLEE_UP;         } break;
+		case KLEE_LEFT: 	{CLIVER_PRINT("KLEE_LEFT");    input = KLEE_LEFT;	} break;
+		case KLEE_RIGHT: 	{CLIVER_PRINT("KLEE_RIGHT");   input = KLEE_RIGHT;	} break;
+		case KLEE_QUITKEY:      {CLIVER_PRINT("KLEE_QUITKEY"); input = KLEE_QUITKEY;	} break;
+		case KLEE_EXITKEY:      {CLIVER_PRINT("KLEE_EXITKEY"); input = KLEE_EXITKEY;	} break;
+		default: 		{CLIVER_PRINT("0xDEADBEEF");   input = 0xDEADBEEF;	} break;
 		}
 		//input = sinput;
 		//if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
@@ -535,6 +535,7 @@ int klee_wait_for_input(int msec)
 int klee_wait_for_input(int msec)
 {
 	int retval;
+        cliver_select_event();
 	cliver_disable_tracking();
 
 	if (g_new_piece) {
