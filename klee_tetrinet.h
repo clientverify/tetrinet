@@ -29,7 +29,8 @@ enum { CLIENT_TO_SERVER=0, SERVER_TO_CLIENT=1 };
 #define KLEE_QUITKEY K_F9
 #define KLEE_EXITKEY K_F10
 
-#define CLIVER_PRINT(x) cliver_print(x)
+//#define CLIVER_PRINT(x) cliver_print(x)
+#define CLIVER_PRINT(x) 
 
 #else
 
