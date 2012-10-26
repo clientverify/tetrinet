@@ -76,6 +76,12 @@ int sgetc(int s)
 //	return lastchar = c;
 //}
 
+static inline double djbwctime(void) {     /* DJB */                                                                                     
+  struct timeval tv;     /* DJB */                                                                                                       
+  gettimeofday(&tv, NULL);     /* DJB */                                                                                                 
+  return (tv.tv_sec + 1E-6 * tv.tv_usec);     /* DJB */                                                                                  
+}     /* DJB */                                                                                                                          
+      
 /*************************************************************************/
 
 /* Read a string, stopping with (and discarding) 0xFF as line terminator.
@@ -109,8 +115,10 @@ char *sgets(char *buf, int len, int s)
 		if (logfile) {
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
-			fprintf(logfile, "[%03d][%d.%03d][sgets] <<< %s\n", g_round,
-					(int) tv.tv_sec, (int) tv.tv_usec/1000, buf);
+			//fprintf(logfile, "[%03d][%d.%03d][sgets] <<< %s\n", g_round,
+			//		(int) tv.tv_sec, (int) tv.tv_usec/1000, buf);
+			//fprintf(logfile, "%d.%03d\n", (int) tv.tv_sec, (int) tv.tv_usec/1000);
+                        fprintf(logfile,"MSGINFO %f s2c %d %d\n", djbwctime(), buf_size-len, buf_size-len);
 			fflush(logfile);
 		}
 	}
@@ -126,16 +134,6 @@ int sputs(const char *str, int s)
 	unsigned char c = 0xFF;
 	int n = 0;
 
-	if (do_log) {
-		if (!logfile)
-			logfile = fopen(logname, "a");
-		if (logfile) {
-			struct timeval tv;
-			gettimeofday(&tv, NULL);
-			fprintf(logfile, "[%03d][%d.%03d] >>> %s\n", g_round,
-					(int) tv.tv_sec, (int) tv.tv_usec/1000, str);
-		}
-	}
 
 	//if (*str != 0) {
 	//	n = ktest_write(s, str, strlen(str));
@@ -159,6 +157,20 @@ int sputs(const char *str, int s)
 		str_buf[i] = str[i];
 	}
 	str_buf[i] = 0xFF;
+
+	if (do_log) {
+		if (!logfile)
+			logfile = fopen(logname, "a");
+		if (logfile) {
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+			//fprintf(logfile, "[%03d][%d.%03d] >>> %s\n", g_round,
+			//		(int) tv.tv_sec, (int) tv.tv_usec/1000, str);
+			//fprintf(logfile, "%d.%03d\n", (int) tv.tv_sec, (int) tv.tv_usec/1000);
+                        fprintf(logfile,"MSGINFO %f c2s %d %d\n", djbwctime(), str_len+1, str_len+1);
+			fflush(logfile);
+		}
+	}
 
 	n = ktest_write(s, str_buf, str_len+1);
 

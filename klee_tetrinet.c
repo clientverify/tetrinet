@@ -658,6 +658,7 @@ ssize_t ktest_write(int fd, const void *buf, size_t count) {
   if (num_bytes >= 0) {
     ktest_check_mem();
     ktest_objects[i].name = ktest_object_names[SERVER_TO_CLIENT];
+    gettimeofday(&(ktest_objects[i].timestamp), NULL);
     ktest_objects[i].numBytes = num_bytes;
     ktest_objects[i].bytes = (unsigned char*) malloc(sizeof (unsigned char) * num_bytes);
     memcpy(ktest_objects[i].bytes, buf, num_bytes);
@@ -676,6 +677,7 @@ ssize_t ktest_read(int fd, void *buf, size_t count) {
   if (num_bytes >= 0) {
     ktest_check_mem();
     ktest_objects[i].name = ktest_object_names[CLIENT_TO_SERVER];
+    gettimeofday(&(ktest_objects[i].timestamp), NULL);
     ktest_objects[i].numBytes = num_bytes;
     ktest_objects[i].bytes = (unsigned char*) malloc(sizeof (unsigned char) * num_bytes);
     memcpy(ktest_objects[i].bytes, buf, num_bytes);
@@ -692,6 +694,7 @@ void ktest_copy(void *buf, size_t num_bytes, int name_type) {
   if (num_bytes >= 0) {
     ktest_check_mem();
     ktest_objects[i].name = ktest_object_names[name_type];
+    gettimeofday(&(ktest_objects[i].timestamp), NULL);
     ktest_objects[i].numBytes = num_bytes;
     ktest_objects[i].bytes = (unsigned char*) malloc(sizeof (unsigned char) * num_bytes);
     memcpy(ktest_objects[i].bytes, buf, num_bytes);
@@ -700,7 +703,6 @@ void ktest_copy(void *buf, size_t num_bytes, int name_type) {
     exit(EXIT_FAILURE);
   }
 }
-
 
 void ktest_finish(int argc, char** argv) {
   ++num_ktest_objects;
