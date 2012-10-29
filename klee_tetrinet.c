@@ -41,14 +41,14 @@ void klee_increment_round() {
 }
 
 int klee_new_piece() { 
-	cliver_disable_tracking();
+	//cliver_disable_tracking();
 	int retval = -1;
 	g_new_piece = 1;
 
 	if (input_generation_type == 2) {
 		retval = current_enumerate_piece;
 	}
-  cliver_enable_tracking();
+  //cliver_enable_tracking();
 	return retval;
 }
 
@@ -460,7 +460,6 @@ int klee_getch() {
 		case KLEE_EXITKEY:      {CLIVER_PRINT("KLEE_EXITKEY"); input = KLEE_EXITKEY;	} break;
 		default: 		{CLIVER_PRINT("0xDEADBEEF");   input = 0xDEADBEEF;	} break;
 		}
-		//input = sinput;
 		//if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
 		if (input == 0xDEADBEEF) {
 			//CLIVER_PRINT("last user input event (input_gen_type > 2)");
@@ -535,8 +534,8 @@ int klee_wait_for_input(int msec)
 int klee_wait_for_input(int msec)
 {
 	int retval;
-        cliver_select_event();
-	cliver_disable_tracking();
+  cliver_select_event();
+	//cliver_disable_tracking();
 
 	if (g_new_piece) {
 
@@ -563,7 +562,7 @@ int klee_wait_for_input(int msec)
 	  }
 
   }
-	cliver_enable_tracking();
+	//cliver_enable_tracking();
 	return retval;
 }
 
