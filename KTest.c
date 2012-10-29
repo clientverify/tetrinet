@@ -164,10 +164,10 @@ KTest *kTest_fromFile(const char *path) {
       goto error;
     if (!read_uint32(f, &o->numBytes))
       goto error;
-    if (!read_uint64(f, &o->timestamp.tv_sec))
-      goto error;
-    if (!read_uint64(f, &o->timestamp.tv_usec))
-      goto error;
+    //if (!read_uint64(f, &o->timestamp.tv_sec))
+    //  goto error;
+    //if (!read_uint64(f, &o->timestamp.tv_usec))
+    //  goto error;
     if (!read_uint32(f, &o->numBytes))
       goto error;
     o->bytes = (unsigned char*) malloc(o->numBytes);
@@ -233,10 +233,10 @@ int kTest_toFile(KTest *bo, const char *path) {
     KTestObject *o = &bo->objects[i];
     if (!write_string(f, o->name))
       goto error;
-    if (!write_uint64(f, o->timestamp.tv_sec))
-      goto error;
-    if (!write_uint64(f, o->timestamp.tv_usec))
-      goto error;
+    //if (!write_uint64(f, o->timestamp.tv_sec))
+    //  goto error;
+    //if (!write_uint64(f, o->timestamp.tv_usec))
+    //  goto error;
     if (!write_uint32(f, o->numBytes))
       goto error;
     if (fwrite(o->bytes, o->numBytes, 1, f)!=1)

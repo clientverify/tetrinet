@@ -10,7 +10,7 @@
 #ifndef __COMMON_KTEST_H__
 #define __COMMON_KTEST_H__
 
-#include <sys/time.h>
+//#include <sys/time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ extern "C" {
   typedef struct KTestObject KTestObject;
   struct KTestObject {
     char *name;
-    struct timeval timestamp;
+    //struct timeval timestamp;
     unsigned numBytes;
     unsigned char *bytes;
   };
