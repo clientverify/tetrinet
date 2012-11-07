@@ -883,6 +883,11 @@ int main(int ac, char **av)
 		}
 
 		i = io->wait_for_input(timeout);
+
+		if (max_round && g_round >= max_round) {
+		  break;  /* out of main loop */
+                }
+
 		if (i == -1) {
 			char buf[1024];
 			if (sgets(buf, sizeof(buf), server_sock)) {
@@ -904,7 +909,7 @@ int main(int ac, char **av)
 			io->screen_redraw();
 		} else if (i == K_F9) {
 			lose_game();
-		} else if (i == K_F10 || (max_round && g_round >= max_round)) {
+		} else if (i == K_F10) {
 			break;  /* out of main loop */
 		} else if (i == K_F1) {
 			if (dispmode != MODE_FIELDS) {
