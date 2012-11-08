@@ -35,9 +35,7 @@ void cliver_enable_tracking() {}
 #endif
 
 void klee_increment_round() { 
-#ifndef KLEE
 	g_round++;
-#endif
 }
 
 int klee_new_piece() { 
@@ -48,7 +46,7 @@ int klee_new_piece() {
 	if (input_generation_type == 2) {
 		retval = current_enumerate_piece;
 	}
-  //cliver_enable_tracking();
+	//cliver_enable_tracking();
 	return retval;
 }
 
@@ -457,19 +455,14 @@ int klee_getch() {
 		case KLEE_LEFT: 	{CLIVER_PRINT("KLEE_LEFT");    input = KLEE_LEFT;	} break;
 		case KLEE_RIGHT: 	{CLIVER_PRINT("KLEE_RIGHT");   input = KLEE_RIGHT;	} break;
 		case KLEE_QUITKEY:      {CLIVER_PRINT("KLEE_QUITKEY"); input = KLEE_QUITKEY;	} break;
-		case KLEE_EXITKEY:      {CLIVER_PRINT("KLEE_EXITKEY"); input = KLEE_EXITKEY;	} break;
+		//case KLEE_EXITKEY:      {CLIVER_PRINT("KLEE_EXITKEY"); input = KLEE_EXITKEY;	} break;
 		default: 		{CLIVER_PRINT("0xDEADBEEF");   input = 0xDEADBEEF;	} break;
 		}
-		//if (input == 0xDEADBEEF || (input_index > (input_generation_type-3))) {
 		if (input == 0xDEADBEEF) {
-			//CLIVER_PRINT("last user input event (input_gen_type > 2)");
-			//IFKLEE(printf("input_index = %d\n", input_index));
 			g_last_round = g_round;
 			g_new_piece = 0;
 			retval = 0;
-			//input_index = 0;
 		} else {
-			//input_index++;
 			retval = input;
 		}
 
@@ -480,8 +473,6 @@ int klee_getch() {
 
 		if (inputs[input_index] == 0xDEADBEEF) {
 			KPRINTF("last user input event");
-			//CLIVER_PRINT("last user input event (input_gen_type 0)");
-			//IFKLEE(printf("input_index = %d\n", input_index));
 			g_last_round = g_round;
 			g_new_piece = 0;
 			input_index = 0;
@@ -496,39 +487,6 @@ int klee_getch() {
 }
 
 #ifdef KLEE
-
-#if 0
-// Returns either a network socket event or a key press (symbolic).
-int klee_wait_for_input(int msec)
-{
-	if (g_new_piece) {
- 		KPRINTF("user input event");
-		return klee_getch();
-	}
-
-	unsigned int ev;
-	MAKE_SYMBOLIC(&ev, "ev", 0);
-
-	switch(ev) {
-		case 1:
- 		if (msec == -1) {
- 			KPRINTF("select timeout event (invalid, exiting)");
- 			KEXIT;
- 		}
- 		KPRINTF("select timeout event");
- 		return -2;	/* out of time */
-
-		case 2:
-		KPRINTF("server message event");
-		return -1;
-		
-		default:
-	  KEXIT;
-	}
-
-	KEXIT;
-}
-#endif
 
 // Returns either a network socket event or a key press (symbolic).
 int klee_wait_for_input(int msec)

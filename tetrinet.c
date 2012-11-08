@@ -950,11 +950,6 @@ int main(int ac, char **av)
 		}
 	}
 	
-	char buf[512];
-	sprintf(buf, "quit %d", my_playernum);
-	sputs(buf, server_sock);
-
-	IFKLEE(klee_warning("SUCCESS"));
 	disconn(server_sock);
 
 	ktest_finish(0, NULL);
