@@ -139,7 +139,7 @@ $(KLEE_OBJS_DIR):
 -include $(KLEE_OBJS:.o=.d)
 
 tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
-	$(LLVM_LD) -strip-debug -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+	$(LLVM_LD) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
 
