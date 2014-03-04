@@ -14,8 +14,8 @@ ifndef NCURSES_DIR
 	NCURSES_DIR = ../../local
 endif
 
-LLVMGCC = $(LLVMGCC_BIN_DIR)/llvm-gcc
-LLVM_LD = $(LLVM_BIN_DIR)/llvm-ld
+LLVMGCC = $(LLVMGCC_BIN_DIR)/clang
+LLVM_LD = $(LLVMGCC_BIN_DIR)/llvm-link
 NCURSES_INCLUDE = $(NCURSES_DIR)/include
 NCURSES_LIB = $(NCURSES_DIR)/lib
 
@@ -91,7 +91,7 @@ $(OBJS_DIR):
 -include $(OBJS:.o=.d)
 
 tetrinet: $(BIN_DIR) $(OBJS_DIR) $(OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN_DIR)/$@ $(OBJS)
+	$(CC) -o $(BIN_DIR)/$@ $(OBJS) $(LDFLAGS) 
 
 ########
 
@@ -107,7 +107,7 @@ $(KTEST_OBJS_DIR):
 -include $(KTEST_OBJS:.o=.d)
 
 tetrinet-ktest: $(BIN_DIR) $(KTEST_OBJS_DIR) $(KTEST_OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN_DIR)/$@ $(KTEST_OBJS)
+	$(CC) -o $(BIN_DIR)/$@ $(KTEST_OBJS) $(LDFLAGS) 
 
 ########
 
@@ -123,7 +123,7 @@ $(SERVER_OBJS_DIR):
 -include $(SERVER_OBJS:.o=.d)
 
 tetrinet-server: $(BIN_DIR) $(SERVER_OBJS_DIR) $(SERVER_OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN_DIR)/$@ $(SERVER_OBJS)
+	$(CC) -o $(BIN_DIR)/$@ $(SERVER_OBJS) $(LDFLAGS) 
 
 ########
 
@@ -139,7 +139,7 @@ $(KLEE_OBJS_DIR):
 -include $(KLEE_OBJS:.o=.d)
 
 tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
-	$(LLVM_LD) $(LDFLAGS) -strip-debug -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+	$(LLVM_LD) -strip-debug -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
 
