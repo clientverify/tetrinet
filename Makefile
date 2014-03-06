@@ -91,7 +91,7 @@ $(OBJS_DIR):
 -include $(OBJS:.o=.d)
 
 tetrinet: $(BIN_DIR) $(OBJS_DIR) $(OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN_DIR)/$@ $(OBJS)
+	$(CC) -o $(BIN_DIR)/$@ $(OBJS) $(LDFLAGS)    
 
 ########
 
@@ -107,7 +107,7 @@ $(KTEST_OBJS_DIR):
 -include $(KTEST_OBJS:.o=.d)
 
 tetrinet-ktest: $(BIN_DIR) $(KTEST_OBJS_DIR) $(KTEST_OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN_DIR)/$@ $(KTEST_OBJS)
+	$(CC) -o $(BIN_DIR)/$@ $(KTEST_OBJS) $(LDFLAGS) 
 
 ########
 
@@ -123,7 +123,7 @@ $(SERVER_OBJS_DIR):
 -include $(SERVER_OBJS:.o=.d)
 
 tetrinet-server: $(BIN_DIR) $(SERVER_OBJS_DIR) $(SERVER_OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN_DIR)/$@ $(SERVER_OBJS)
+	$(CC) -o $(BIN_DIR)/$@ $(SERVER_OBJS) $(LDFLAGS) 
 
 ########
 
