@@ -528,37 +528,37 @@ int klee_wait_for_input(int msec)
 int nuklear_merge() { klee_warning("nuklear_merge"); return 0; }
 
 // Stub functions used by stub interface.
-void klee_void() { return; }
-void klee_int(int i) { return; }
-void klee_int_pchar(int i, const char *s) { return; }
-void klee_pchar_int_int(const char *s, int i, int j) { return; }
-void klee_pchar_int(const char *s, int i) { return; }
+void stub_params_void() { return; }
+void stub_params_int(int i) { return; }
+void stub_params_int_pchar(int i, const char *s) { return; }
+void stub_params_pchar_int_int(const char *s, int i, int j) { return; }
+void stub_params_pchar_int(const char *s, int i) { return; }
 
 // Replaces ncurses interface with stub functions
 Interface klee_interface;
 
-void klee_init() {
+void klee_interface_init() {
 
 	// Set symbolic input function
 	klee_interface.wait_for_input = klee_wait_for_input;
 
 	// Set stub functions
-	klee_interface.screen_setup = klee_void;
-	klee_interface.screen_refresh = klee_void;
-	klee_interface.screen_redraw = klee_void;
-	klee_interface.draw_text = klee_int_pchar;
-	klee_interface.clear_text = klee_int;
-	klee_interface.setup_fields = klee_void;
-	klee_interface.draw_own_field = klee_void;
-	klee_interface.draw_other_field = klee_int;
-	klee_interface.draw_status = klee_void;
-	klee_interface.draw_specials = klee_void;
-	klee_interface.draw_attdef = klee_pchar_int_int;
-	klee_interface.draw_gmsg_input = klee_pchar_int;
-	klee_interface.clear_gmsg_input = klee_void;
-	klee_interface.setup_partyline = klee_void;
-	klee_interface.draw_partyline_input = klee_pchar_int;
-	klee_interface.setup_winlist = klee_void;
+	klee_interface.screen_setup = stub_params_void;
+	klee_interface.screen_refresh = stub_params_void;
+	klee_interface.screen_redraw = stub_params_void;
+	klee_interface.draw_text = stub_params_int_pchar;
+	klee_interface.clear_text = stub_params_int;
+	klee_interface.setup_fields = stub_params_void;
+	klee_interface.draw_own_field = stub_params_void;
+	klee_interface.draw_other_field = stub_params_int;
+	klee_interface.draw_status = stub_params_void;
+	klee_interface.draw_specials = stub_params_void;
+	klee_interface.draw_attdef = stub_params_pchar_int_int;
+	klee_interface.draw_gmsg_input = stub_params_pchar_int;
+	klee_interface.clear_gmsg_input = stub_params_void;
+	klee_interface.setup_partyline = stub_params_void;
+	klee_interface.draw_partyline_input = stub_params_pchar_int;
+	klee_interface.setup_winlist = stub_params_void;
 }
 
 #endif

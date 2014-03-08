@@ -4,7 +4,7 @@
 
 extern Interface klee_interface;
 
-void klee_init();
+void klee_interface_init();
 
 extern int g_round;
 extern int g_last_round;

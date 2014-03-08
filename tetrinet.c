@@ -862,8 +862,8 @@ int main(int ac, char **av)
 	int i;
 
 #ifdef KLEE
-	// Initialize the klee stub interface
-	klee_init();
+	// Initialize the stub interface
+	klee_interface_init();
 #endif
 
 	if ((i = init(ac, av)) != 0)
