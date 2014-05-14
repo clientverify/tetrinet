@@ -129,9 +129,10 @@ tetrinet-server: $(BIN_DIR) $(SERVER_OBJS_DIR) $(SERVER_OBJS)
 
 KLEE_OBJS_DIR = .klee_objs
 KLEE_OBJS = $(addprefix $(KLEE_OBJS_DIR)/,$(KLEE_SRCS:.c=.o))
+LLVMGCC_CFLAGS += $(CFLAGS_INCLUDE)
 
 $(KLEE_OBJS): $(KLEE_OBJS_DIR)/%.o: %.c
-	$(LLVMGCC) $(CFLAGS_INCLUDE) -MMD -DKLEE -emit-llvm -o $@ -c $<
+	$(LLVMGCC) $(LLVMGCC_CFLAGS) -MMD -DKLEE -emit-llvm -o $@ -c $<
 
 $(KLEE_OBJS_DIR):
 	@mkdir $(KLEE_OBJS_DIR)
