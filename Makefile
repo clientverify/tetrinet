@@ -14,8 +14,8 @@ ifndef NCURSES_DIR
 	NCURSES_DIR = ../../local
 endif
 
-LLVMGCC = $(LLVMGCC_BIN_DIR)/llvm-gcc
-LLVM_LD = $(LLVM_BIN_DIR)/llvm-ld
+LLVMGCC = $(LLVMGCC_BIN_DIR)/clang
+LLVM_LD = $(LLVM_BIN_DIR)/llvm-link
 NCURSES_INCLUDE = $(NCURSES_DIR)/include
 NCURSES_LIB = $(NCURSES_DIR)/lib
 
@@ -140,7 +140,7 @@ $(KLEE_OBJS_DIR):
 -include $(KLEE_OBJS:.o=.d)
 
 tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
-	$(LLVM_LD) $(LDFLAGS) -strip-debug -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+	$(LLVM_LD) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
 
