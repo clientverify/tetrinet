@@ -8,8 +8,8 @@ ifndef LLVMCOMPILER
         LLVMCOMPILER=clang
 endif
 
-ifndef LLVMLD
-        LLVMLD=llvm-link
+ifndef LLVMLINKER
+        LLVMLINKER=llvm-link
 endif
 
 ifndef NCURSES_DIR
