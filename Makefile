@@ -4,18 +4,20 @@ ifndef CC
 	CC = gcc
 endif
 
-ifndef LLVMGCC_BIN_DIR
-	LLVMGCC_BIN_DIR = ../../local/bin
-endif
-ifndef LLVM_BIN_DIR
-	LLVM_BIN_DIR = ../../local/bin
-endif
-ifndef NCURSES_DIR
-	NCURSES_DIR = ../../local
+ifndef LLVMCOMPILER
+        LLVMCOMPILER=clang
 endif
 
-LLVMGCC = $(LLVMGCC_BIN_DIR)/$(LLVM_CC)
-LLVM_LD = $(LLVM_BIN_DIR)/$(LLVM_LD)
+ifndef LLVMLD
+        LLVMLD=llvm-link
+endif
+
+ifndef NCURSES_DIR
+	NCURSES_DIR = /usr/
+endif
+
+#LLVMCOMPILER = $(LLVMCOMPILER_BIN_DIR)/$(LLVM_CC)
+#LLVMLINKER = $(LLVM_BIN_DIR)/$(LLVMLINKER)
 NCURSES_INCLUDE = $(NCURSES_DIR)/include
 NCURSES_LIB = $(NCURSES_DIR)/lib
 
@@ -77,6 +79,8 @@ tags:
 
 .PHONY: all
 
+print-%  : ; @echo $* = $($*)
+
 ########
 
 OBJS_DIR = .objs
@@ -129,10 +133,10 @@ tetrinet-server: $(BIN_DIR) $(SERVER_OBJS_DIR) $(SERVER_OBJS)
 
 KLEE_OBJS_DIR = .klee_objs
 KLEE_OBJS = $(addprefix $(KLEE_OBJS_DIR)/,$(KLEE_SRCS:.c=.o))
-LLVMGCC_CFLAGS += $(CFLAGS_INCLUDE)
+LLVMCOMPILER_FLAGS += $(CFLAGS_INCLUDE)
 
 $(KLEE_OBJS): $(KLEE_OBJS_DIR)/%.o: %.c
-	$(LLVMGCC) $(LLVMGCC_CFLAGS) -MMD -DKLEE -emit-llvm -o $@ -c $<
+	$(LLVMCOMPILER) $(LLVMCOMPILER_FLAGS) -MMD -DKLEE -emit-llvm -o $@ -c $<
 
 $(KLEE_OBJS_DIR):
 	@mkdir $(KLEE_OBJS_DIR)
@@ -140,7 +144,7 @@ $(KLEE_OBJS_DIR):
 -include $(KLEE_OBJS:.o=.d)
 
 tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
-	$(LLVM_LD) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
+	$(LLVMLINKER) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
 
