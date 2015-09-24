@@ -64,7 +64,7 @@ endif
 
 ########
 
-TARGETS = tetrinet tetrinet-server tetrinet-ktest tetrinet-klee
+TARGETS = tetrinet tetrinet-server tetrinet-ktest tetrinet-klee.bc
 
 all: $(TARGETS)
 
@@ -143,7 +143,7 @@ $(KLEE_OBJS_DIR):
 
 -include $(KLEE_OBJS:.o=.d)
 
-tetrinet-klee: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
+tetrinet-klee.bc: $(BIN_DIR) $(KLEE_OBJS_DIR) $(KLEE_OBJS)
 	$(LLVMLINKER) -o $(BIN_DIR)/$@ $(KLEE_OBJS)
 
 ########
