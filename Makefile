@@ -103,7 +103,7 @@ KTEST_OBJS_DIR = .ktest_objs
 KTEST_OBJS = $(addprefix $(KTEST_OBJS_DIR)/,$(KTEST_SRCS:.c=.o))
 
 $(KTEST_OBJS): $(KTEST_OBJS_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) -MMD -DKTEST -o $@ -c $<
+	$(CC) $(CFLAGS) -g -MMD -DKTEST -o $@ -c $<
 
 $(KTEST_OBJS_DIR):
 	@mkdir $(KTEST_OBJS_DIR)
@@ -111,7 +111,7 @@ $(KTEST_OBJS_DIR):
 -include $(KTEST_OBJS:.o=.d)
 
 tetrinet-ktest: $(BIN_DIR) $(KTEST_OBJS_DIR) $(KTEST_OBJS)
-	$(CC) -o $(BIN_DIR)/$@ $(KTEST_OBJS) $(LDFLAGS) 
+	$(CC) -g -o $(BIN_DIR)/$@ $(KTEST_OBJS) $(LDFLAGS) 
 
 ########
 
@@ -136,7 +136,7 @@ KLEE_OBJS = $(addprefix $(KLEE_OBJS_DIR)/,$(KLEE_SRCS:.c=.o))
 LLVMCOMPILER_FLAGS += $(CFLAGS_INCLUDE)
 
 $(KLEE_OBJS): $(KLEE_OBJS_DIR)/%.o: %.c
-	$(LLVMCOMPILER) $(LLVMCOMPILER_FLAGS) -MMD -DKLEE -emit-llvm -o $@ -c $<
+	$(LLVMCOMPILER) $(LLVMCOMPILER_FLAGS) -g -MMD -DKLEE -emit-llvm -o $@ -c $<
 
 $(KLEE_OBJS_DIR):
 	@mkdir $(KLEE_OBJS_DIR)
