@@ -187,7 +187,7 @@ static void screen_cleanup()
 	wmove(stdscr, scrheight-1, 0);
 	wrefresh(stdscr);
 	endwin();
-	printf("\n");
+	fprintf(stdout, "\n");
 }
 
 /*************************************************************************/
