@@ -23,7 +23,7 @@ NCURSES_LIB = $(NCURSES_DIR)/lib
 
 # The passed compilation flags
 CFLAGS_INCLUDE = -I$(NCURSES_INCLUDE) -I$(NCURSES_INCLUDE)/ncurses
-CFLAGS = $(CFLAGS_INCLUDE) -O2 -g -fno-builtin-log
+CFLAGS = $(CFLAGS_INCLUDE) -O0 -g -fno-builtin-log
 
 # Whether to enable IPv6 support
 #IPV6 = 1
