@@ -283,7 +283,8 @@ void parse(char *buf)
 		int i;
 
 		if ((s = strtok(NULL, " ")))
-			/* stack height */;
+            printf("%s", s);
+			///* stack height */;
 		if ((s = strtok(NULL, " ")))
 			initial_level = atoi(s);
 		if ((s = strtok(NULL, " "))) {
