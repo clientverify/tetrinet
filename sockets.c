@@ -66,7 +66,7 @@ char *sgets(char *buf, int len, int s)
     if (c == 0xFF)
 	ptr--;
     *ptr = 0;
-    if (log) {
+    if (do_log) {
 	if (!logfile)
 	    logfile = fopen(logname, "a");
 	if (logfile) {
@@ -89,7 +89,7 @@ int sputs(const char *str, int s)
     unsigned char c = 0xFF;
     int n = 0;
 
-    if (log) {
+    if (do_log) {
 	if (!logfile)
 	    logfile = fopen(logname, "a");
 	if (logfile) {
@@ -188,7 +188,7 @@ int conn(const char *host, int port, char ipbuf[4])
 	return -1;
     }
     if (ipbuf)
-	memcpy(retbuf, &sa.sin_addr, 4);
+	memcpy(ipbuf, &sa.sin_addr, 4);
 #endif
 
     return sock;

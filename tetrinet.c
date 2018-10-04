@@ -21,7 +21,7 @@
 /*************************************************************************/
 
 int fancy = 0;		/* Fancy TTY graphics? */
-int log = 0;		/* Log network traffic to file? */
+int do_log = 0;		/* Log network traffic to file? */
 char *logname;		/* Log filename */
 int windows_mode = 0;	/* Try to be just like the Windows version? */
 int noslide = 0;	/* Disallow piece sliding? */
@@ -656,7 +656,7 @@ int init(int ac, char **av)
 				if (strcmp(av[i], "-fancy") == 0) {
 					fancy = 1;
 				} else if (strcmp(av[i], "-log") == 0) {
-					log = 1;
+					do_log = 1;
 					i++;
 					if (i >= ac) {
 						fprintf(stderr, "Option -log requires an argument\n");
