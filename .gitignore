@@ -1,0 +1,9 @@
+# Object files
+*.o
+
+#Executables
+tetrinet-server
+tetrinet
+
+#Directories
+bin/

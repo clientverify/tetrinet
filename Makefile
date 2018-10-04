@@ -41,7 +41,8 @@ endif
 all: tetrinet tetrinet-server
 
 install: all
-	cp -p tetrinet tetrinet-server /usr/games
+	mkdir -p bin
+	cp -p tetrinet tetrinet-server bin
 
 clean:
 	rm -f tetrinet tetrinet-server *.o
