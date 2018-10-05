@@ -18,6 +18,9 @@
 #include "tetris.h"
 #include "io.h"
 
+#undef FD_ZERO
+#define FD_ZERO(p)  memset((char *)(p), '\0', sizeof(*(p)))
+
 /*************************************************************************/
 
 #define MY_HLINE	(fancy ? ACS_HLINE : '-')
